@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visa Checklist Generator - flyeasygo</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f3f6fa;
+        }
+
+        .editor-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        /* High-fidelity PDF Preview wrapper */
+        .preview-sticky {
+            position: sticky;
+            top: 90px;
+            z-index: 10;
+        }
+
+        .preview-scroll-container {
+            max-height: calc(100vh - 140px);
+            overflow-y: auto;
+            border-radius: 12px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+            background: #e2e8f0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Elegant A4 Voucher styling */
+        .voucher-template {
+            width: 210mm;
+            min-height: 297mm;
+            background: white;
+            padding: 25px 30px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+            font-family: 'Outfit', sans-serif;
+            color: #2d3748;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        /* Header Style */
+        .voucher-header {
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 12px;
+            margin-bottom: 18px;
+        }
+
+        .agency-info h4 {
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+        }
+
+        .voucher-title-badge {
+            background: #1e3a8a;
+            color: white;
+            padding: 6px 15px;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        /* Grid sections styling */
+        .voucher-section-title {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #1e3a8a;
+            border-bottom: 1px solid #bfdbfe;
+            padding-bottom: 4px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .voucher-info-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 12px;
+        }
+
+        .info-label {
+            font-size: 9px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+
+        .info-value {
+            font-size: 11px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .info-value-lg {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1e3a8a;
+        }
+
+        /* Terms and Cancellation styling */
+        .terms-list {
+            padding-left: 0;
+            list-style: none;
+            margin-bottom: 0;
+        }
+
+        .terms-list li {
+            font-size: 9.5px;
+            line-height: 1.4;
+            color: #475569;
+            margin-bottom: 4px;
+            position: relative;
+            padding-left: 12px;
+        }
+
+        .terms-list li::before {
+            content: "•";
+            color: #2563eb;
+            font-weight: bold;
+            font-size: 12px;
+            position: absolute;
+            left: 0;
+            top: -2px;
+        }
+
+        .policy-box {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-left: 4px solid #f59e0b;
+            padding: 8px 12px;
+            border-radius: 4px;
+        }
+
+        .policy-text {
+            font-size: 10px;
+            font-weight: 700;
+            color: #b45309;
+            margin-bottom: 0;
+        }
+
+        /* Footer styling */
+        .voucher-footer {
+            border-top: 1px solid #e2e8f0;
+            padding-top: 10px;
+            margin-top: 20px;
+            font-size: 9px;
+            color: #64748b;
+        }
+
+        /* Beautiful CSS specimen illustration */
+        .photo-specimen-box {
+            width: 90px;
+            height: 115px;
+            border: 2px dashed #94a3b8;
+            background: #f8fafc;
+            border-radius: 4px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .photo-specimen-avatar {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            background: #cbd5e1;
+            margin-top: 10px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1.5px solid #64748b;
+        }
+
+        .photo-specimen-avatar::before {
+            content: "";
+            width: 32px;
+            height: 32px;
+            background: #94a3b8;
+            border-radius: 50%;
+            margin-top: 8px;
+        }
+
+        .photo-specimen-avatar::after {
+            content: "";
+            width: 48px;
+            height: 25px;
+            background: #475569;
+            border-radius: 50% 50% 0 0;
+            position: absolute;
+            bottom: -2px;
+        }
+
+        .photo-specimen-badge {
+            font-size: 7.5px;
+            background: #0f172a;
+            color: white;
+            padding: 2px 4px;
+            border-radius: 2px;
+            margin-top: auto;
+            margin-bottom: 5px;
+            font-weight: 800;
+            z-index: 2;
+        }
+
+        .specimen-guide-line {
+            position: absolute;
+            border-top: 1px dashed rgba(239, 68, 68, 0.7);
+            width: 100%;
+            left: 0;
+        }
+
+        /* Checklist columns layout */
+        .visa-check-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .visa-check-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            font-size: 10px;
+            color: #334155;
+            line-height: 1.35;
+        }
+
+        .visa-check-icon {
+            color: #0f766e;
+            font-size: 10px;
+            margin-top: 2px;
+        }
+
+        /* Print Specifics for A4 preview */
+        @media print {
+            body * {
+                visibility: hidden !important;
+            }
+
+            .voucher-template,
+            .voucher-template * {
+                visibility: visible !important;
+            }
+
+            .voucher-template {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 210mm !important;
+                height: 297mm !important;
+                padding: 25px 30px !important;
+                box-shadow: none !important;
+                margin: 0 !important;
+            }
+
+            @page {
+                size: A4 portrait;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="add-itinerary.html">
+                <i class="fas fa-plane-departure me-2"></i>flyeasygo
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="itineraries.html"><i class="fas fa-folder-open me-1"></i> Saved
+                            Itineraries</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-info fw-bold" href="saved-vouchers.html"><i
+                                class="fas fa-file-pdf me-1"></i> Saved Vouchers</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white fw-bold active border-bottom border-2 border-warning"
+                            href="visa.html"><i class="fas fa-passport me-1"></i> Visa Checklist</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-info fw-bold" href="saved-visas.html"><i
+                                class="fas fa-history me-1"></i> Saved Visas</a>
+                    </li>
+                    <li class="nav-item ms-2">
+                        <button class="btn btn-warning btn-sm text-dark fw-bold px-3" id="quickDownloadPDF">
+                            <i class="fas fa-file-pdf me-1"></i> Download Checklist
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid my-4 px-lg-5">
+        <div class="row g-4">
+            <!-- Left Column: Editor Form -->
+            <div class="col-xl-5">
+                <div class="editor-container p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                        <h4 class="fw-bold text-primary mb-0" id="pageMainTitle"><i
+                                class="fas fa-sliders-h me-2"></i>Visa Details</h4>
+                        <button class="btn btn-outline-secondary btn-sm" onclick="resetToDefaults()">
+                            <i class="fas fa-undo me-1"></i> Load Default China
+                        </button>
+                    </div>
+
+                    <form id="visaForm">
+                        <!-- Agency Information -->
+                        <div class="card mb-3 border-light shadow-sm">
+                            <div class="card-header bg-light py-2">
+                                <h6 class="mb-0 text-dark fw-bold"><i class="fas fa-building me-2"></i>Agency
+                                    Information</h6>
+                            </div>
+                            <div class="card-body p-3">
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold">Agency Name</label>
+                                        <input type="text" class="form-control form-control-sm" id="inputAgencyName"
+                                            value="FlyAgain Online Pvt. Ltd.">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold">Agency Logo</label>
+                                        <input type="file" class="form-control form-control-sm" id="inputAgencyLogo"
+                                            accept="image/*" onchange="loadCustomLogo(this)">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-bold">Email</label>
+                                        <input type="email" class="form-control form-control-sm" id="inputAgencyEmail"
+                                            value="visas@flyagainonline.com">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-bold">Phone</label>
+                                        <input type="text" class="form-control form-control-sm" id="inputAgencyPhone"
+                                            value="+91 99887 76655">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-bold">Website</label>
+                                        <input type="text" class="form-control form-control-sm" id="inputAgencyWebsite"
+                                            value="www.flyagainonline.com">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Greetings & Checklist Title -->
+                        <div class="card mb-3 border-light shadow-sm">
+                            <div class="card-header bg-light py-2">
+                                <h6 class="mb-0 text-dark fw-bold"><i class="fas fa-heading me-2"></i>Header & Title
+                                </h6>
+                            </div>
+                            <div class="card-body p-3">
+                                <div class="row g-2">
+                                    <div class="col-md-12">
+                                        <label class="form-label small fw-bold">Greetings Message</label>
+                                        <input type="text" class="form-control form-control-sm" id="inputGreetings"
+                                            value="Greetings from FlyAgain Online Pvt. Ltd.!!!">
+                                    </div>
+                                    <div class="col-md-12">
+                                        <label class="form-label small fw-bold">Checklist Title</label>
+                                        <input type="text" class="form-control form-control-sm" id="inputChecklistTitle"
+                                            value="Checklist – China Business Visa">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <!-- Visa Category, Fees & Documents -->
+                        <div class="card mb-3 border-light shadow-sm">
+                            <div class="card-header bg-light py-2">
+                                <h6 class="mb-0 text-dark fw-bold"><i class="fas fa-file-invoice-dollar me-2"></i>Visa
+                                    category & Fees</h6>
+                            </div>
+                            <div class="card-body p-3">
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold">Visa Fees</label>
+                                        <input type="text" class="form-control form-control-sm" id="inputFees"
+                                            value="11000 INR FOR SINGLE ENTRY PER APPLICANT">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold">Courier Charges / Note</label>
+                                        <input type="text" class="form-control form-control-sm" id="inputTerms"
+                                            value="NOTE: Courier Charges are not included and will be charged additionally.">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Customize Checklists -->
+                        <div class="card mb-3 border-light shadow-sm">
+                            <div class="card-header bg-light py-2">
+                                <h6 class="mb-0 text-dark fw-bold"><i class="fas fa-list-check me-2"></i>Customize Lists
+                                </h6>
+                            </div>
+                            <div class="card-body p-3">
+                                <div class="row g-2">
+                                    <div class="col-md-12">
+                                        <label class="form-label small fw-bold">Visa Required Docs (One per
+                                            line)</label>
+                                        <textarea class="form-control form-control-sm" id="inputRequiredDocs"
+                                            rows="6"></textarea>
+                                    </div>
+                                    <div class="col-md-12 mt-2">
+                                        <label class="form-label small fw-bold">Required Details Checklist (One per
+                                            line)</label>
+                                        <textarea class="form-control form-control-sm" id="inputDetailsList"
+                                            rows="6"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Save Actions -->
+                        <div class="text-center my-4">
+                            <button type="submit" class="btn btn-primary w-100 btn-lg shadow-sm">
+                                <i class="fas fa-save me-2"></i>Save Visa Checklist
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right Column: Live A4 PDF Preview -->
+            <div class="col-xl-7">
+                <div class="preview-sticky">
+                    <div class="preview-scroll-container" id="pdfTemplateWrapper">
+                        <div id="pdfTemplate" class="voucher-template bg-white shadow">
+
+                            <!-- A4 Document Header -->
+                            <div class="voucher-header">
+                                <div class="row align-items-center mb-2">
+                                    <div class="col-12 text-center mb-2 border-bottom pb-1">
+                                        <span class="text-secondary small fw-semibold" id="pdfGreetings">Greetings from
+                                            FlyAgain Online Pvt. Ltd.!!!</span>
+                                    </div>
+                                    <div class="col-8">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="bg-white border rounded p-2 d-inline-flex align-items-center justify-content-center"
+                                                style="height: 55px; width: 85px;">
+                                                <img id="viewAgencyLogo"
+                                                    src="https://adminapi.flyeasygo.com/assets-files/8e17aad2-9df5-4e81-a841-7551a0b03ddb.png"
+                                                    alt="Logo"
+                                                    style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                                            </div>
+                                            <div>
+                                                <h5 id="viewAgencyName" class="text-primary mb-0 fw-bold"
+                                                    style="font-size: 14px;">FlyAgain Online Pvt. Ltd.</h5>
+                                                <div class="text-muted small"
+                                                    style="font-size: 9.5px; line-height: 1.35;">
+                                                    <span id="viewAgencyEmail">visas@flyagainonline.com</span><br>
+                                                    <span id="viewAgencyPhone">+91 99887 76655</span> | <span
+                                                        id="viewAgencyWebsite">www.flyagainonline.com</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4 text-end">
+                                        <div class="bg-primary bg-opacity-10 d-inline-block px-3 py-1 rounded-pill">
+                                            <span class="fw-bold text-white small" style="font-size: 9.5px;">VISA
+                                                PACK</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-12">
+                                        <div class="bg-light p-2 rounded text-center border">
+                                            <h4 class="text-dark mb-0 fw-bold" id="pdfChecklistTitle"
+                                                style="font-size: 15px;">Checklist – China Business Visa</h4>
+                                            <span class="text-muted small" style="font-size: 10px;">Applicant Document
+                                                Submission & Specimen Checklist</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- Two column content: Required docs left, photo specifications right -->
+                            <div class="row g-3">
+                                <div class="col-7">
+                                    <div class="voucher-section-title">
+                                        <i class="fas fa-folder-open"></i> REQUIRED EMBASSY DOCUMENTS
+                                    </div>
+                                    <div id="pdfDocsListContainer" style="padding-left: 5px;">
+                                        <!-- Documents list populated dynamically -->
+                                    </div>
+                                </div>
+
+                                <div class="col-5">
+                                    <div class="voucher-section-title">
+                                        <i class="fas fa-camera"></i> PHOTO SPECIFICATIONS
+                                    </div>
+                                    <div class="d-flex flex-column align-items-center mb-2 bg-light p-2 rounded border">
+                                        <!-- CSS Illustration of Photo Specimen -->
+                                        <div class="photo-specimen-box mb-2">
+                                            <!-- Guidelines -->
+                                            <div class="specimen-guide-line" style="top: 25px;"></div>
+                                            <div class="specimen-guide-line" style="top: 80px;"></div>
+                                            <!-- Avatar representation -->
+                                            <div class="photo-specimen-avatar"></div>
+                                            <div class="photo-specimen-badge">35mm x 45mm</div>
+                                        </div>
+                                        <div class="text-center"
+                                            style="font-size: 8.5px; color: #475569; line-height: 1.3;">
+                                            <strong class="text-dark">MATTE FINISH SPECIMEN</strong><br>
+                                            White Background | Face visibility 70-80%
+                                        </div>
+                                    </div>
+                                    <ul class="terms-list text-secondary"
+                                        style="font-size: 8.5px; line-height: 1.35; padding-left: 2px;"
+                                        id="pdfPhotoSpecsContainer">
+                                        <li>Not more than 3 months old</li>
+                                        <li>Photo size is passport size (35mm wide x 45mm high)</li>
+                                        <li>Face visibility should be 70% - 80%</li>
+                                        <li>Colored, with plain white background and matte finish</li>
+                                        <li>Taken looking straight forward and face seen clearly with ears</li>
+                                        <li>On a good quality paper matte finish</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Applicant Personal Information / Details Checklist -->
+                            <div class="voucher-section-title mt-2">
+                                <i class="fas fa-list-check"></i> MANDATORY APPLICANT PERSONAL DATA
+                            </div>
+                            <div id="pdfDetailsListContainer" class="visa-check-grid mb-2"
+                                style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px dashed #cbd5e1;">
+                                <!-- Details items populated dynamically -->
+                            </div>
+
+
+                            <!-- Fees & Terms Box -->
+                            <div class="voucher-section-title">
+                                <i class="fas fa-receipt"></i> CONSULAR FEES & CANCELLATION CONDITIONS
+                            </div>
+                            <div class="policy-box mb-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <p class="policy-text" id="pdfFees">FEES: 11000 INR FOR SINGLE ENTRY PER APPLICANT
+                                    </p>
+                                    <span class="badge bg-warning text-dark fw-bold small"
+                                        style="font-size: 8px;">PAYABLE IN ADVANCE</span>
+                                </div>
+                            </div>
+                            <p class="text-muted small mb-0" style="font-size: 8.5px; line-height: 1.35;" id="pdfTerms">
+                                NOTE: Courier Charges are not included and will be charged additionally.
+                            </p>
+
+                            <!-- Footer -->
+                            <div class="voucher-footer text-center">
+                                <p class="mb-1 fw-bold text-dark" id="pdfFooterAgencyName"
+                                    style="font-size: 9.5px; letter-spacing: 0.5px;">
+                                    FlyAgain Online Pvt. Ltd. — Global Visa Specialists
+                                </p>
+                                <div class="d-flex justify-content-center gap-3" style="font-size: 8.5px;">
+                                    <span><i class="fas fa-envelope text-primary me-1"></i> <span
+                                            id="pdfFooterEmail">visas@flyagainonline.com</span></span>
+                                    <span><i class="fas fa-globe text-primary me-1"></i> <span
+                                            id="pdfFooterWebsite">www.flyagainonline.com</span></span>
+                                    <span><i class="fas fa-phone-alt text-primary me-1"></i> <span
+                                            id="pdfFooterPhone">+91 99887 76655</span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- html2pdf.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- SweetAlert2 for premium alerts -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Custom Visa JS -->
+    <script src="visa.js"></script>
+</body>
+
+</html>

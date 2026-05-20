@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saved Hotel Vouchers - flyeasygo</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f3f6fa;
+        }
+
+        .voucher-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .voucher-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
+        }
+
+        .voucher-status-badge {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+        }
+
+        .badge-confirmed {
+            background-color: #dcfce7;
+            color: #15803d;
+        }
+
+        .badge-pending {
+            background-color: #fef3c7;
+            color: #d97706;
+        }
+
+        .badge-cancelled {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .search-box {
+            border-radius: 30px;
+            padding-left: 20px;
+            padding-right: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+            border: 1px solid #e2e8f0;
+        }
+
+        .search-box:focus {
+            box-shadow: 0 4px 20px rgba(0, 123, 209, 0.15);
+            border-color: #007bd1;
+        }
+
+        /* Off-screen/Hidden template container for background PDF generation */
+        #pdfRenderCanvas {
+            position: absolute;
+            left: -9999px;
+            top: -9999px;
+            width: 210mm;
+            min-height: 297mm;
+            background: white;
+            padding: 20px 25px;
+            font-family: 'Outfit', sans-serif;
+            color: #2d3748;
+            box-sizing: border-box;
+        }
+
+        /* Rendered template specific styles */
+        .voucher-template {
+            width: 210mm;
+            height: 100%;
+            background: white;
+            padding: 20px 25px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+            font-family: 'Outfit', sans-serif;
+            color: #2d3748;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .voucher-header {
+            border-bottom: 3px double #e2e8f0;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .agency-info h4 {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+        }
+
+        .voucher-title-badge {
+            color: #000000;
+            padding: 0px 20px;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .iata-container {
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .iata-logo {
+            height: 38px;
+            object-fit: contain;
+            margin-bottom: 4px;
+        }
+
+        .iata-text {
+            font-size: 8px;
+            font-weight: 700;
+            color: #64748b;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .voucher-section-title {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #1e3a8a;
+            border-bottom: 1px solid #bfdbfe;
+            padding-bottom: 4px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .voucher-info-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin-bottom: 16px;
+        }
+
+        .info-label {
+            font-size: 9px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+
+        .info-value {
+            font-size: 12px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .info-value-lg {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1e3a8a;
+        }
+
+        .badge-status {
+            background-color: #dcfce7;
+            color: #15803d;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            display: inline-block;
+            border: 1px solid #bbf7d0;
+            text-transform: uppercase;
+        }
+
+        .badge-status.unconfirmed {
+            background-color: #fee2e2;
+            color: #b91c1c;
+            border-color: #fecaca;
+        }
+
+        .terms-list {
+            padding-left: 0;
+            list-style: none;
+            margin-bottom: 0;
+        }
+
+        .terms-list li {
+            font-size: 10px;
+            line-height: 1.4;
+            color: #475569;
+            margin-bottom: 6px;
+            position: relative;
+            padding-left: 14px;
+        }
+
+        .terms-list li::before {
+            content: "•";
+            color: #2563eb;
+            font-weight: bold;
+            font-size: 14px;
+            position: absolute;
+            left: 0;
+            top: -2px;
+        }
+
+        .policy-box {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-left: 4px solid #f59e0b;
+            padding: 10px 15px;
+            border-radius: 4px;
+        }
+
+        .policy-text {
+            font-size: 11px;
+            font-weight: 700;
+            color: #b45309;
+            margin-bottom: 0;
+        }
+
+        .voucher-footer {
+            border-top: 1px solid #e2e8f0;
+            padding-top: 12px;
+            margin-top: 25px;
+            font-size: 10px;
+            color: #64748b;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="add-itinerary.html">
+                <i class="fas fa-plane-departure me-2"></i>flyeasygo
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="itineraries.html"><i class="fas fa-folder-open me-1"></i> Saved
+                            Itineraries</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link text-warning fw-bold" href="hotel-voucher.html"><i
+                                class="fas fa-hotel me-1"></i> Hotel Voucher</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active fw-bold text-info border-bottom border-2 border-warning"
+                            href="saved-vouchers.html"><i class="fas fa-file-pdf me-1"></i> Saved Vouchers</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link text-info fw-bold" href="saved-visas.html"><i
+                                class="fas fa-history me-1"></i> Saved Visas</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+            <div>
+                <h2 class="fw-bold text-dark"><i class="fas fa-file-pdf text-primary me-2"></i>Saved Hotel Vouchers</h2>
+                <p class="text-muted mb-0">View, download, edit, or manage all previously saved travel hotel vouchers.
+                </p>
+            </div>
+            <div>
+                <a href="hotel-voucher.html" class="btn btn-primary px-4 fw-bold shadow-sm">
+                    <i class="fas fa-plus me-1"></i> Create New Voucher
+                </a>
+            </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="card mb-4 border-0 shadow-sm rounded-4">
+            <div class="card-body p-3">
+                <div class="input-group">
+                    <span class="input-group-text bg-transparent border-0 pe-0 text-muted">
+                        <i class="fas fa-search fs-5"></i>
+                    </span>
+                    <input type="text" class="form-control form-control-lg border-0 search-box" id="searchInput"
+                        placeholder="Search by hotel name, passenger name, confirmation code or label reference..."
+                        oninput="renderHistoryList()">
+                </div>
+            </div>
+        </div>
+
+        <!-- Vouchers Grid -->
+        <div class="row g-4" id="vouchersGrid">
+            <!-- Dynamically populated -->
+        </div>
+
+        <!-- Hidden Canvas for Off-Screen PDF generation -->
+        <div id="pdfRenderCanvas">
+            <!-- Dynamically rendered prior to html2pdf trigger -->
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- html2pdf.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- History Page Script -->
+    <script>
+        let voucherHistory = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadVouchers();
+        });
+
+        // Load saved vouchers from LocalStorage
+        function loadVouchers() {
+            try {
+                voucherHistory = JSON.parse(localStorage.getItem('saved_hotel_vouchers') || '[]');
+
+                // Sort vouchers by created date descending
+                voucherHistory.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+                renderHistoryList();
+            } catch (err) {
+                console.error("Error loading hotel voucher history", err);
+                Swal.fire('Error', 'Failed to retrieve saved voucher records.', 'error');
+            }
+        }
+
+        // Render saved vouchers cards
+        function renderHistoryList() {
+            const grid = document.getElementById('vouchersGrid');
+            const query = document.getElementById('searchInput').value.trim().toLowerCase();
+
+            grid.innerHTML = "";
+
+            const filtered = voucherHistory.filter(voucher => {
+                const label = (voucher.label || "").toLowerCase();
+                const hotel = (voucher.hotelName || "").toLowerCase();
+                const passenger = (voucher.passengerNames || "").toLowerCase();
+                const confirm = (voucher.confirmation || "").toLowerCase();
+                return label.includes(query) || hotel.includes(query) || passenger.includes(query) || confirm.includes(query);
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <div class="bg-white border rounded-4 py-5 px-3 shadow-sm d-flex flex-column align-items-center justify-content-center">
+                            <i class="fas fa-folder-open text-muted mb-3" style="font-size: 60px;"></i>
+                            <h4 class="fw-bold text-dark">No Hotel Vouchers Found</h4>
+                            <p class="text-secondary max-width-500 mb-4" style="max-width: 500px;">
+                                ${query ? 'No vouchers match your search criteria. Try using different keywords!' : 'You haven\'t saved any hotel vouchers yet. Build a beautiful voucher and click "Save Voucher"!'}
+                            </p>
+                            ${query ? '' : '<a href="hotel-voucher.html" class="btn btn-primary px-4 fw-bold"><i class="fas fa-plus me-1"></i> Create First Voucher</a>'}
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.forEach(voucher => {
+                const status = voucher.status || "CONFIRMED";
+                let badgeClass = "badge-confirmed";
+                if (status === "PENDING") badgeClass = "badge-pending";
+                if (status === "CANCELLED") badgeClass = "badge-cancelled";
+
+                const createdDateStr = new Date(voucher.createdAt).toLocaleDateString('en-GB', {
+                    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                });
+
+                const cardHtml = `
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card voucher-card border-0 h-100 shadow-sm">
+                            <div class="card-body p-4 d-flex flex-column justify-content-between">
+                                <div>
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <span class="voucher-status-badge ${badgeClass}">${status}</span>
+                                        <small class="text-muted" style="font-size: 11px;"><i class="far fa-calendar-alt me-1"></i> ${createdDateStr}</small>
+                                    </div>
+                                    
+                                    <h5 class="fw-bold text-primary mb-1">${escapeHtml(voucher.label)}</h5>
+                                    <p class="text-muted small mb-3 border-bottom pb-2"><i class="fas fa-hashtag me-1"></i> Confirmation: <strong class="text-dark">${escapeHtml(voucher.confirmation)}</strong></p>
+                                    
+                                    <div class="mb-2">
+                                        <span class="small fw-bold text-secondary text-uppercase d-block mb-1" style="font-size: 9px; letter-spacing: 0.5px;">Hotel</span>
+                                        <span class="fw-semibold text-dark d-block"><i class="fas fa-hotel text-secondary me-1"></i> ${escapeHtml(voucher.hotelName)}</span>
+                                        <span class="text-muted small" style="font-size: 11px;">${escapeHtml(voucher.nights)} Nights | ${escapeHtml(voucher.rooms)} Rooms</span>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <span class="small fw-bold text-secondary text-uppercase d-block mb-1" style="font-size: 9px; letter-spacing: 0.5px;">Stay Period</span>
+                                        <span class="text-dark small d-block"><i class="far fa-clock text-secondary me-1"></i> <strong>${escapeHtml(voucher.checkIn)}</strong> to <strong>${escapeHtml(voucher.checkOut)}</strong></span>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <span class="small fw-bold text-secondary text-uppercase d-block mb-1" style="font-size: 9px; letter-spacing: 0.5px;">Passengers</span>
+                                        <span class="text-dark small d-block text-truncate"><i class="fas fa-users text-secondary me-1"></i> ${escapeHtml((voucher.roomRows && voucher.roomRows.length > 0) ? voucher.roomRows[0].pax : (voucher.roomPaxDetails ? voucher.roomPaxDetails.split('\n')[0] : 'N/A'))}</span>
+                                    </div>
+                                </div>
+
+                                <div class="row g-2 pt-3 border-top mt-auto">
+                                    <div class="col-6">
+                                        <button class="btn btn-outline-primary w-100 btn-sm fw-bold" onclick="editVoucher('${voucher.id}')">
+                                            <i class="fas fa-edit me-1"></i> Edit
+                                        </button>
+                                    </div>
+                                    <div class="col-6">
+                                        <button class="btn btn-outline-success w-100 btn-sm fw-bold" onclick="downloadVoucherPDF('${voucher.id}')">
+                                            <i class="fas fa-file-pdf me-1"></i> PDF
+                                        </button>
+                                    </div>
+                                    <div class="col-12 mt-2">
+                                        <button class="btn btn-link text-danger w-100 btn-sm text-decoration-none fw-semibold" onclick="deleteVoucher('${voucher.id}', '${escapeJs(voucher.label)}')">
+                                            <i class="fas fa-trash-alt me-1"></i> Delete Voucher
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.insertAdjacentHTML('beforeend', cardHtml);
+            });
+        }
+
+        // Edit Voucher redirector
+        function editVoucher(id) {
+            const voucher = voucherHistory.find(v => v.id === id);
+            if (!voucher) return;
+
+            // Set edit target
+            localStorage.setItem('hotel_voucher_edit_target', JSON.stringify(voucher));
+            window.location.href = "hotel-voucher.html";
+        }
+
+        // Delete Voucher trigger
+        function deleteVoucher(id, label) {
+            Swal.fire({
+                title: 'Delete Voucher?',
+                text: `Are you sure you want to permanently delete "${label}" from your save history?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    voucherHistory = voucherHistory.filter(v => v.id !== id);
+                    localStorage.setItem('saved_hotel_vouchers', JSON.stringify(voucherHistory));
+
+                    // If the current editing cache has this ID, clear editing
+                    const activeCache = JSON.parse(localStorage.getItem('hotel_voucher_current') || '{}');
+                    if (activeCache.id === id) {
+                        localStorage.removeItem('hotel_voucher_current');
+                    }
+
+                    Swal.fire('Deleted!', 'Voucher history record has been removed.', 'success');
+                    renderHistoryList();
+                }
+            });
+        }
+
+        // Off-screen background A4 rendering & html2pdf downloader
+        async function downloadVoucherPDF(id) {
+            const voucher = voucherHistory.find(v => v.id === id);
+            if (!voucher) return;
+
+            // Show beautiful loading overlay
+            Swal.fire({
+                title: 'Preparing PDF Download...',
+                text: 'Rendering professional A4 hotel voucher...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Create temporary off-screen export container that mirrors the editor preview
+            const tempDiv = document.createElement('div');
+            tempDiv.style.position = 'fixed';
+            tempDiv.style.left = '-9999px';
+            tempDiv.style.top = '0';
+            tempDiv.style.width = '210mm';
+            tempDiv.style.zIndex = '-9999';
+            tempDiv.style.pointerEvents = 'none';
+
+            try {
+                const logoSrc = voucher.agencyLogo || "https://adminapi.flyeasygo.com/assets-files/8e17aad2-9df5-4e81-a841-7551a0b03ddb.png";
+                const nightsPad = (voucher.nights || "0").toString().padStart(2, '0');
+                const badgeClass = (voucher.status === 'CONFIRMED') ? 'badge-status' : 'badge-status unconfirmed';
+
+                // Map bulleted list terms
+                let termsHtml = "";
+                if (Array.isArray(voucher.terms)) {
+                    voucher.terms.forEach(term => {
+                        termsHtml += `<li>${escapeHtml(term.replace(/^[\s•\-\*\✓\✕\+\.\d\)]+/, '').trim())}</li>`;
+                    });
+                }
+                if (!termsHtml) {
+                    termsHtml = "<li class='text-muted'>No terms specified.</li>";
+                }
+
+                let roomRowsHtml = "";
+                if (voucher.roomRows && voucher.roomRows.length > 0) {
+                    voucher.roomRows.forEach(row => {
+                        roomRowsHtml += `
+                            <tr>
+                                <td class="px-2 py-1.5 fw-semibold text-dark">${escapeHtml(row.room || '-')}</td>
+                                <td class="px-2 py-1.5">${escapeHtml(row.pax || '-')}</td>
+                                <td class="px-2 py-1.5 text-secondary">${escapeHtml(row.type || '-')}</td>
+                                <td class="px-2 py-1.5 text-secondary">${escapeHtml(row.meal || '-')}</td>
+                            </tr>
+                        `;
+                    });
+                } else if (voucher.roomPaxDetails) {
+                    roomRowsHtml = `<tr><td colspan="4" class="px-2 py-1.5 text-dark" style="white-space: pre-line;">${escapeHtml(voucher.roomPaxDetails)}</td></tr>`;
+                } else {
+                    roomRowsHtml = `<tr><td colspan="4" class="px-2 py-1.5 text-muted text-center">No rooms configured</td></tr>`;
+                }
+
+                tempDiv.innerHTML = `
+                    <div class="voucher-template">
+                        <!-- Voucher Header -->
+                        <div class="row align-items-center voucher-header">
+                            <div class="col-8">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="bg-white border rounded p-2 d-inline-flex align-items-center justify-content-center" style="height: 60px;">
+                                        <img src="${logoSrc}" alt="Logo" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                                    </div>
+                                    <div class="agency-info">
+                                        <h4 class="text-primary mb-0">${escapeHtml(voucher.agencyName.toUpperCase())}</h4>
+                                        <div class="text-muted small" style="font-size: 10px;">
+                                            <span>${escapeHtml(voucher.agencyEmail)}</span> | 
+                                            <span>${escapeHtml(voucher.agencyPhone)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-4 text-end iata-container">
+                                <img class="iata-logo" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT18Jq4JiE0rZPsL5qwvLMGoqjlNVvmCholOQ&s" alt="IATA Logo">
+                            </div>
+                        </div>
+
+                        <div class="text-center mb-2">
+                            <div class="voucher-title-badge">HOTEL BOOKING VOUCHER</div>
+                        </div>
+
+                        <!-- Booking Overview Cards -->
+                        <div class="row g-2 mb-3">
+                            <div class="col-4">
+                                <div class="bg-light p-2 border rounded text-center">
+                                    <div class="info-label">Confirmation No.</div>
+                                    <div class="info-value-lg text-danger">${escapeHtml(voucher.confirmation)}</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="bg-light p-2 border rounded text-center">
+                                    <div class="info-label">Booking Status</div>
+                                    <div><span class="${badgeClass}">${escapeHtml(voucher.status)}</span></div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="bg-light p-2 border rounded text-center">
+                                    <div class="info-label">No. of Nights</div>
+                                    <div class="info-value-lg">${escapeHtml(nightsPad)}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hotel Details Section -->
+                        <div class="voucher-section-title">
+                            <i class="fas fa-hotel"></i> Hotel Accommodation Details
+                        </div>
+                        <div class="voucher-info-box">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <div class="info-label">Hotel Name</div>
+                                    <div class="info-value text-primary fs-5" style="font-weight: 700;">${escapeHtml(voucher.hotelName)}</div>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="info-label">Hotel Address</div>
+                                    <div class="info-value" style="font-size: 11px;">${escapeHtml(voucher.address)}</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="info-label">Hotel Phone No.</div>
+                                    <div class="info-value">${escapeHtml(voucher.phone)}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stay & Room Details Section -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <div class="voucher-section-title">
+                                    <i class="fas fa-clock"></i> Check-In & Check-Out
+                                </div>
+                                <div class="voucher-info-box h-100 mb-0">
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <div class="info-label">Check-In Date</div>
+                                            <div class="info-value">${escapeHtml(voucher.checkIn)}</div>
+                                            <div class="text-muted" style="font-size: 9px; margin-top: 2px;">From 2:00 PM</div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="info-label">Check-Out Date</div>
+                                            <div class="info-value">${escapeHtml(voucher.checkOut)}</div>
+                                            <div class="text-muted" style="font-size: 9px; margin-top: 2px;">Until 12:00 PM</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Passenger, Room & Meal Configuration Section -->
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <div class="voucher-section-title mt-3" style="position: relative; top: 12px;">
+                                    <i class="fas fa-users"></i> Room, Meal & Passenger Configuration
+                                </div>
+                                <table class="table table-bordered table-sm mt-4 mb-3" style="font-size: 10px; border-color: #5a5a5a; border-radius: 4px;">
+                                    <thead class="text-secondary" style="background-color: #f8fafc; font-size: 9px; text-transform: uppercase;">
+                                        <tr style="border-color: #5a5a5a;">
+                                            <th style="border-color: #5a5a5a;" class="fw-bold px-2 py-1.5" style="width: 15%;">Room</th>
+                                            <th style="border-color: #5a5a5a;" class="fw-bold px-2 py-1.5" style="width: 40%;">Passenger Name(s)</th>
+                                            <th style="border-color: #5a5a5a;" class="fw-bold px-2 py-1.5" style="width: 25%;">Room Type</th>
+                                            <th style="border-color: #5a5a5a;" class="fw-bold px-2 py-1.5" style="width: 20%;">Meal Type</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="viewRoomPaxTable">
+                                        ${roomRowsHtml}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Terms & Cancellation Policies -->
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <div class="voucher-section-title">
+                                    <i class="fas fa-info-circle"></i> Booking Terms & Conditions
+                                </div>
+                                <div class="bg-light border rounded p-3" style="height: auto; overflow: hidden;">
+                                    <ul class="terms-list">
+                                        ${termsHtml}
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="voucher-section-title">
+                                    <i class="fas fa-exclamation-circle"></i> Cancellation Policy
+                                </div>
+                                <div class="policy-box">
+                                    <p class="policy-text">${escapeHtml(voucher.cancellationPolicy)}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Footer Contact Info -->
+                        <div class="voucher-footer text-center">
+                            <p class="mb-1 fw-bold text-dark">Please feel free to call us or write to us for any clarification.</p>
+                            <p class="text-muted mb-0" style="font-size: 9px;">Thank you for booking with ${escapeHtml(voucher.agencyName.toUpperCase())}. Have a wonderful and memorable stay!</p>
+                        </div>
+                    </div>
+                `;
+
+                document.body.appendChild(tempDiv);
+
+                // Let styles render
+                await document.fonts.ready;
+                await new Promise(resolve => setTimeout(resolve, 300));
+
+                const targetElement = tempDiv.querySelector('.voucher-template');
+
+                const opt = {
+                    margin: 0,
+                    filename: `${voucher.hotelName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_voucher_${voucher.confirmation}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: {
+                        scale: 2,
+                        useCORS: true,
+                        logging: false,
+                        letterRendering: true,
+                        scrollX: 0,
+                        scrollY: 0
+                    },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+
+                // Export and save
+                await html2pdf().set(opt).from(targetElement).save();
+
+                Swal.fire({
+                    title: 'Voucher Exported!',
+                    text: 'Your PDF voucher has been downloaded successfully.',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+
+            } catch (err) {
+                console.error(err);
+                Swal.fire('Error', 'Failed to generate PDF download.', 'error');
+            } finally {
+                // Clean up the temporary div
+                if (tempDiv.parentNode) {
+                    tempDiv.parentNode.removeChild(tempDiv);
+                }
+            }
+        }
+
+        // HTML escaping helper utilities to prevent JS injection
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.toString()
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function escapeJs(str) {
+            if (!str) return '';
+            return str.toString()
+                .replace(/\\/g, '\\\\')
+                .replace(/'/g, "\\'")
+                .replace(/"/g, '\\"')
+                .replace(/\n/g, '\\n')
+                .replace(/\r/g, '\\r');
+        }
+    </script>
+</body>
+
+</html>

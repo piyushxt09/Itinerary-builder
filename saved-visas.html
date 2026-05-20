@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saved Visas - flyeasygo</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f3f6fa;
+        }
+
+        .visa-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .visa-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
+        }
+
+        .search-box {
+            border-radius: 30px;
+            padding-left: 20px;
+            padding-right: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+            border: 1px solid #e2e8f0;
+        }
+
+        .search-box:focus {
+            box-shadow: 0 4px 20px rgba(0, 123, 209, 0.15);
+            border-color: #007bd1;
+        }
+
+        /* Beautiful CSS specimen illustration for hidden PDF rendering */
+        .photo-specimen-box {
+            width: 90px;
+            height: 115px;
+            border: 2px dashed #94a3b8;
+            background: #f8fafc;
+            border-radius: 4px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .photo-specimen-avatar {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            background: #cbd5e1;
+            margin-top: 10px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1.5px solid #64748b;
+        }
+
+        .photo-specimen-avatar::before {
+            content: "";
+            width: 32px;
+            height: 32px;
+            background: #94a3b8;
+            border-radius: 50%;
+            margin-top: 8px;
+        }
+
+        .photo-specimen-avatar::after {
+            content: "";
+            width: 48px;
+            height: 25px;
+            background: #475569;
+            border-radius: 50% 50% 0 0;
+            position: absolute;
+            bottom: -2px;
+        }
+
+        .photo-specimen-badge {
+            font-size: 7.5px;
+            background: #0f172a;
+            color: white;
+            padding: 2px 4px;
+            border-radius: 2px;
+            margin-top: auto;
+            margin-bottom: 5px;
+            font-weight: 800;
+            z-index: 2;
+        }
+
+        .specimen-guide-line {
+            position: absolute;
+            border-top: 1px dashed rgba(239, 68, 68, 0.7);
+            width: 100%;
+            left: 0;
+        }
+
+        .voucher-template {
+            width: 210mm;
+            min-height: 297mm;
+            background: white;
+            padding: 25px 30px;
+            font-family: 'Outfit', sans-serif;
+            color: #2d3748;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .voucher-header {
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 12px;
+            margin-bottom: 18px;
+        }
+
+        .voucher-section-title {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #1e3a8a;
+            border-bottom: 1px solid #bfdbfe;
+            padding-bottom: 4px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .voucher-info-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 12px;
+        }
+
+        .info-label {
+            font-size: 9px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+
+        .info-value {
+            font-size: 11px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .info-value-lg {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1e3a8a;
+        }
+
+        .terms-list {
+            padding-left: 0;
+            list-style: none;
+            margin-bottom: 0;
+        }
+
+        .terms-list li {
+            font-size: 9.5px;
+            line-height: 1.4;
+            color: #475569;
+            margin-bottom: 4px;
+            position: relative;
+            padding-left: 12px;
+        }
+
+        .terms-list li::before {
+            content: "•";
+            color: #2563eb;
+            font-weight: bold;
+            font-size: 12px;
+            position: absolute;
+            left: 0;
+            top: -2px;
+        }
+
+        .policy-box {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-left: 4px solid #f59e0b;
+            padding: 8px 12px;
+            border-radius: 4px;
+        }
+
+        .policy-text {
+            font-size: 10px;
+            font-weight: 700;
+            color: #b45309;
+            margin-bottom: 0;
+        }
+
+        .voucher-footer {
+            border-top: 1px solid #e2e8f0;
+            padding-top: 10px;
+            margin-top: 20px;
+            font-size: 9px;
+            color: #64748b;
+        }
+
+        .visa-check-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .visa-check-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            font-size: 10px;
+            color: #334155;
+            line-height: 1.35;
+        }
+
+        /* Beautiful CSS specimen illustration */
+        .photo-specimen-box {
+            width: 90px;
+            height: 115px;
+            border: 2px dashed #94a3b8;
+            background: #f8fafc;
+            border-radius: 4px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .photo-specimen-avatar {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            background: #cbd5e1;
+            margin-top: 10px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1.5px solid #64748b;
+        }
+
+        .photo-specimen-avatar::before {
+            content: "";
+            width: 32px;
+            height: 32px;
+            background: #94a3b8;
+            border-radius: 50%;
+            margin-top: 8px;
+        }
+
+        .photo-specimen-avatar::after {
+            content: "";
+            width: 48px;
+            height: 25px;
+            background: #475569;
+            border-radius: 50% 50% 0 0;
+            position: absolute;
+            bottom: -2px;
+        }
+
+        .photo-specimen-badge {
+            font-size: 7.5px;
+            background: #0f172a;
+            color: white;
+            padding: 2px 4px;
+            border-radius: 2px;
+            margin-top: auto;
+            margin-bottom: 5px;
+            font-weight: 800;
+            z-index: 2;
+        }
+
+        .specimen-guide-line {
+            position: absolute;
+            border-top: 1px dashed rgba(239, 68, 68, 0.7);
+            width: 100%;
+            left: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="add-itinerary.html">
+                <i class="fas fa-plane-departure me-2"></i>flyeasygo
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="itineraries.html"><i class="fas fa-folder-open me-1"></i> Saved
+                            Itineraries</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-info fw-bold" href="saved-vouchers.html"><i
+                                class="fas fa-file-pdf me-1"></i> Saved Vouchers</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white fw-bold" href="visa.html"><i class="fas fa-passport me-1"></i>
+                            Visa Checklist</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white fw-bold active border-bottom border-2 border-warning"
+                            href="saved-visas.html"><i class="fas fa-history me-1"></i> Saved Visas</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <!-- Header Panel -->
+        <div class="d-flex justify-content-between align-items-center mb-5 pb-3 border-bottom">
+            <div>
+                <span class="badge bg-primary px-3 py-2 rounded-pill mb-2 text-uppercase fw-semibold"
+                    style="letter-spacing: 1px; font-size: 10px;">Visa Checklist Archive</span>
+                <h1 class="fw-bold text-dark mb-1" style="font-size: 26px;">Saved Visa Requirements History</h1>
+                <p class="text-secondary small mb-0">List of visa checklist requirements and passport photos specs
+                    generated for applicants.</p>
+            </div>
+            <a href="visa.html" class="btn btn-primary fw-bold shadow-sm px-4">
+                <i class="fas fa-plus-circle me-2"></i>Create New Visa Checklist
+            </a>
+        </div>
+
+        <!-- Filter & Search Section -->
+        <div class="card border-0 shadow-sm p-4 mb-4 bg-white" style="border-radius: 16px;">
+            <div class="row g-3 align-items-center">
+                <div class="col-md-6 col-lg-8">
+                    <label class="form-label small fw-bold text-secondary text-uppercase mb-2">Search Applicant
+                        Checklist</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0 text-muted"><i
+                                class="fas fa-search"></i></span>
+                        <input type="text" class="form-control bg-light border-start-0 ps-0 search-box" id="visaSearch"
+                            placeholder="Search by Applicant Name, Passport, or Title..."
+                            oninput="handleSearch(this.value)">
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="bg-light p-3 rounded border text-center">
+                        <span class="text-secondary small d-block">Total Checklists Saved</span>
+                        <h3 class="fw-extrabold text-primary mb-0 mt-1" id="savedCount">0</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Saved Visas Grid -->
+        <div class="row g-4" id="visasGrid">
+            <!-- Dynamically populated -->
+        </div>
+
+        <!-- No records state -->
+        <div class="text-center py-5 d-none" id="emptyState">
+            <i class="fas fa-passport fa-4x text-secondary mb-4 opacity-50"></i>
+            <h4 class="fw-bold text-dark">No Saved Visa Checklists found</h4>
+            <p class="text-muted small">You haven't generated any visa checklists yet or none match your query.</p>
+            <a href="visa.html" class="btn btn-outline-primary fw-bold btn-sm mt-2 px-3">Generate Visa checklist Now</a>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- html2pdf.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        let visaHistory = [];
+        let filteredHistory = [];
+
+        // Load checklists
+        function loadVisas() {
+            visaHistory = JSON.parse(localStorage.getItem('saved_visas') || '[]');
+            filteredHistory = [...visaHistory];
+            renderGrid();
+        }
+
+        // Render cards grid
+        function renderGrid() {
+            const grid = document.getElementById('visasGrid');
+            const emptyState = document.getElementById('emptyState');
+            const countEl = document.getElementById('savedCount');
+
+            countEl.innerText = filteredHistory.length;
+            grid.innerHTML = '';
+
+            if (filteredHistory.length === 0) {
+                emptyState.classList.remove('d-none');
+                return;
+            }
+
+            emptyState.classList.add('d-none');
+
+            filteredHistory.forEach(visa => {
+                const formattedDate = new Date(visa.updatedAt).toLocaleDateString('en-GB', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                const cardHtml = `
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card visa-card h-100 border-0 shadow-sm p-4 bg-white d-flex flex-column">
+                           
+                            <h4 class="fw-bold text-dark mb-1" style="font-size: 16px;">${escapeHtml(visa.checklistTitle || 'Visa Checklist')}</h4>
+                            <div class="text-secondary small mb-3">
+                                <span><i class="fas fa-building me-1.5 text-muted"></i> Agency: <strong>${escapeHtml(visa.agencyName || 'FlyAgain Online Pvt. Ltd.')}</strong></span>
+                            </div>                            
+                            <div class="bg-light p-2 rounded border mb-3 small" style="font-size: 9.5px; line-height: 1.45;">
+                                <div class="text-secondary mb-1">
+                                    <i class="fas fa-folder-open text-primary me-1"></i> Docs Required: <strong>${(visa.requiredDocs || []).length} items</strong>
+                                </div>
+                                <div class="text-secondary text-truncate">
+                                    <i class="fas fa-receipt text-warning me-1"></i> Fee: <strong>${escapeHtml(visa.fees.replace('FEES: ', ''))}</strong>
+                                </div>
+                            </div>
+                            
+                            <div class="row g-2 pt-3 border-top mt-auto">
+                                <div class="col-6">
+                                    <button class="btn btn-outline-primary btn-sm w-100 fw-bold" onclick="editVisa('${visa.id}')">
+                                        <i class="fas fa-edit me-1"></i> Edit
+                                    </button>
+                                </div>
+                                <div class="col-6">
+                                    <button class="btn btn-outline-success btn-sm w-100 fw-bold" onclick="downloadVisaPDF('${visa.id}')">
+                                        <i class="fas fa-file-pdf me-1"></i> PDF
+                                    </button>
+                                </div>
+                                <div class="col-12 mt-2 text-center">
+                                    <button class="btn btn-link text-danger btn-sm text-decoration-none fw-semibold p-0" onclick="deleteVisa('${visa.id}', '${escapeJs(visa.checklistTitle || 'Checklist')}')">
+                                        <i class="fas fa-trash-alt me-1"></i> Delete checklist
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.insertAdjacentHTML('beforeend', cardHtml);
+            });
+        }
+
+        // Search filter
+        function handleSearch(term) {
+            term = term.trim().toLowerCase();
+            if (!term) {
+                filteredHistory = [...visaHistory];
+            } else {
+                filteredHistory = visaHistory.filter(visa =>
+                    visa.applicantName.toLowerCase().includes(term) ||
+                    visa.passportNo.toLowerCase().includes(term) ||
+                    visa.checklistTitle.toLowerCase().includes(term)
+                );
+            }
+            renderGrid();
+        }
+
+        // Edit Visa checklist
+        function editVisa(id) {
+            window.location.href = `visa.html?id=${id}`;
+        }
+
+        // Delete visa history item
+        function deleteVisa(id, name) {
+            Swal.fire({
+                title: 'Delete Checklist?',
+                text: `Are you sure you want to permanently delete the checklist for "${name}"?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    visaHistory = visaHistory.filter(v => v.id !== id);
+                    localStorage.setItem('saved_visas', JSON.stringify(visaHistory));
+                    loadVisas();
+                    Swal.fire('Deleted!', 'Visa checklist record has been deleted.', 'success');
+                }
+            });
+        }
+
+        // Off-screen background A4 rendering & html2pdf downloader
+        async function downloadVisaPDF(id) {
+            const visa = visaHistory.find(v => v.id === id);
+            if (!visa) return;
+
+            Swal.fire({
+                title: 'Preparing PDF Download...',
+                text: 'Rendering professional A4 visa checklist...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Create temporary div for printing
+            const tempDiv = document.createElement('div');
+            tempDiv.style.position = 'fixed';
+            tempDiv.style.left = '0';
+            tempDiv.style.top = '0';
+            tempDiv.style.width = '210mm';
+            tempDiv.style.zIndex = '-9999';
+            tempDiv.style.opacity = '0';
+            tempDiv.style.pointerEvents = 'none';
+
+            try {
+                // Documents list map
+                let docsHtml = "";
+                if (Array.isArray(visa.requiredDocs)) {
+                    docsHtml = visa.requiredDocs.map((doc, i) => `
+                        <div class="mb-2" style="font-size: 10px; color: #334155; line-height: 1.35; display: flex; align-items: flex-start; gap: 6px;">
+                            <span><strong>${i + 1}.</strong> ${escapeHtml(doc)}</span>
+                        </div>
+                    `).join('');
+                }
+
+                // Details list map
+                let detailsHtml = "";
+                if (Array.isArray(visa.detailsList)) {
+                    detailsHtml = visa.detailsList.map(detail => `
+                        <div class="visa-check-item">
+                            <i class="fas fa-circle text-secondary" style="font-size: 9.5px; margin-top: 1.5px;"></i>
+                            <span>${escapeHtml(detail)}</span>
+                        </div>
+                    `).join('');
+                }
+
+                // Safely grab agency defaults for old visas
+                const logoSrc = visa.agencyLogo || "https://adminapi.flyeasygo.com/assets-files/8e17aad2-9df5-4e81-a841-7551a0b03ddb.png";
+                const agencyName = visa.agencyName || "FlyAgain Online Pvt. Ltd.";
+                const agencyEmail = visa.agencyEmail || "visas@flyagainonline.com";
+                const agencyPhone = visa.agencyPhone || "+91 99887 76655";
+                const agencyWebsite = visa.agencyWebsite || "www.flyagainonline.com";
+
+                tempDiv.innerHTML = `
+                    <div class="voucher-template bg-white">
+                        
+                        <!-- A4 Document Header -->
+                        <div class="voucher-header">
+                            <div class="row align-items-center mb-2">
+                                <div class="col-12 text-center mb-2 border-bottom pb-1">
+                                    <span class="text-secondary small fw-semibold">${escapeHtml(visa.greetings || 'Greetings!!!')}</span>
+                                </div>
+                                <div class="col-8">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="bg-white border rounded p-2 d-inline-flex align-items-center justify-content-center" style="height: 55px; width: 85px;">
+                                            <img src="${logoSrc}" alt="Logo" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                                        </div>
+                                        <div>
+                                            <h5 class="text-primary mb-0 fw-bold" style="font-size: 14px;">${escapeHtml(agencyName)}</h5>
+                                            <div class="text-muted small" style="font-size: 9.5px; line-height: 1.35;">
+                                                <span>${escapeHtml(agencyEmail)}</span><br>
+                                                <span>${escapeHtml(agencyPhone)}</span> | <span>${escapeHtml(agencyWebsite)}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-4 text-end">
+                                    <div class="bg-primary bg-opacity-10 d-inline-block px-3 py-1 rounded-pill">
+                                        <span class="fw-bold text-white small" style="font-size: 9.5px;">VISA PACK</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-12">
+                                    <div class="bg-light p-2 rounded text-center border">
+                                        <h4 class="text-dark mb-0 fw-bold" style="font-size: 15px;">${escapeHtml(visa.checklistTitle || 'Visa Checklist')}</h4>
+                                        <span class="text-muted small" style="font-size: 10px;">Applicant Document Submission & Specimen Checklist</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <!-- Two column content -->
+                        <div class="row g-3">
+                            <div class="col-7">
+                                <div class="voucher-section-title">
+                                    <i class="fas fa-folder-open"></i> REQUIRED EMBASSY DOCUMENTS
+                                </div>
+                                <div style="padding-left: 5px;">
+                                    ${docsHtml || '<span class="text-muted small">No documents listed.</span>'}
+                                </div>
+                            </div>
+
+                            <div class="col-5">
+                                <div class="voucher-section-title">
+                                    <i class="fas fa-camera"></i> PHOTO SPECIFICATIONS
+                                </div>
+                                <div class="d-flex flex-column align-items-center mb-2 bg-light p-2 rounded border">
+                                    <!-- CSS Illustration of Photo Specimen -->
+                                    <div class="photo-specimen-box mb-2">
+                                        <div class="specimen-guide-line" style="top: 25px;"></div>
+                                        <div class="specimen-guide-line" style="top: 80px;"></div>
+                                        <div class="photo-specimen-avatar"></div>
+                                        <div class="photo-specimen-badge">35mm x 45mm</div>
+                                    </div>
+                                    <div class="text-center" style="font-size: 8.5px; color: #475569; line-height: 1.3;">
+                                        <strong class="text-dark">MATTE FINISH SPECIMEN</strong><br>
+                                        White Background | Face visibility 70-80%
+                                    </div>
+                                </div>
+                                <ul class="terms-list text-secondary" style="font-size: 8.5px; line-height: 1.35; padding-left: 2px;">
+                                    <li>Not more than 3 months old</li>
+                                    <li>Photo size is passport size (35mm wide x 45mm high)</li>
+                                    <li>Face visibility should be 70% - 80%</li>
+                                    <li>Colored, with plain white background and matte finish</li>
+                                    <li>Taken looking straight forward and face seen clearly with ears</li>
+                                    <li>On a good quality paper matte finish</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Applicant Personal Information / Details Checklist -->
+                        <div class="voucher-section-title mt-2">
+                            <i class="fas fa-list-check"></i> MANDATORY APPLICANT PERSONAL DATA
+                        </div>
+                        <div class="visa-check-grid mb-2" style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px dashed #cbd5e1;">
+                            ${detailsHtml || '<span class="text-muted small col-12">No details requested.</span>'}
+                        </div>
+
+
+                        <!-- Fees & Terms Box -->
+                        <div class="voucher-section-title">
+                            <i class="fas fa-receipt"></i> CONSULAR FEES & CANCELLATION CONDITIONS
+                        </div>
+                        <div class="policy-box mb-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <p class="policy-text">${escapeHtml(visa.fees)}</p>
+                                <span class="badge bg-warning text-dark fw-bold small" style="font-size: 8px;">PAYABLE IN ADVANCE</span>
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-0" style="font-size: 8.5px; line-height: 1.35;">
+                            ${escapeHtml(visa.terms)}
+                        </p>
+
+                        <!-- Footer -->
+                        <div class="voucher-footer text-center">
+                            <p class="mb-1 fw-bold text-dark" style="font-size: 9.5px; letter-spacing: 0.5px;">
+                                ${escapeHtml(agencyName)} — Global Visa Specialists
+                            </p>
+                            <div class="d-flex justify-content-center gap-3" style="font-size: 8.5px;">
+                                <span><i class="fas fa-envelope text-primary me-1"></i> <span>${escapeHtml(agencyEmail)}</span></span>
+                                <span><i class="fas fa-globe text-primary me-1"></i> <span>${escapeHtml(agencyWebsite)}</span></span>
+                                <span><i class="fas fa-phone-alt text-primary me-1"></i> <span>${escapeHtml(agencyPhone)}</span></span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                document.body.appendChild(tempDiv);
+
+                // Let fonts & styles render
+                await document.fonts.ready;
+                await new Promise(resolve => setTimeout(resolve, 300));
+
+                const targetElement = tempDiv.querySelector('.voucher-template');
+
+                const opt = {
+                    margin: 0,
+                    filename: `${(visa.checklistTitle || 'visa').replace(/[^a-z0-9]/gi, '_').toLowerCase()}_checklist.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: {
+                        scale: 2.5,
+                        useCORS: true,
+                        logging: false,
+                        letterRendering: true
+                    },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+
+                await html2pdf().set(opt).from(targetElement).save();
+
+                Swal.fire({
+                    title: 'Checklist Exported!',
+                    text: 'Visa checklist has been successfully downloaded.',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+
+            } catch (err) {
+                console.error(err);
+                Swal.fire('Error', 'Failed to generate checklist PDF.', 'error');
+            } finally {
+                if (tempDiv.parentNode) {
+                    tempDiv.parentNode.removeChild(tempDiv);
+                }
+            }
+        }
+
+        // HTML escaping utilities
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.toString()
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function escapeJs(str) {
+            if (!str) return '';
+            return str.toString()
+                .replace(/\\/g, '\\\\')
+                .replace(/'/g, "\\'")
+                .replace(/"/g, '\\"')
+                .replace(/\n/g, '\\n')
+                .replace(/\r/g, '\\r');
+        }
+
+        // Initialize on load
+        window.addEventListener('load', loadVisas);
+    </script>
+</body>
+
+</html>

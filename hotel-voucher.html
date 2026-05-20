@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Voucher Generator - flyeasygo</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        /* Specific Styles for Hotel Voucher Editor & Live Preview */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f3f6fa;
+        }
+
+        .editor-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        /* High-fidelity PDF Preview wrapper */
+        .preview-sticky {
+            position: sticky;
+            top: 90px;
+            z-index: 10;
+        }
+
+        .preview-scroll-container {
+            max-height: calc(100vh - 140px);
+            overflow-y: auto;
+            border-radius: 12px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+            background: #e2e8f0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Elegant A4 Voucher styling */
+        .voucher-template {
+            width: 210mm;
+            height: 100%;
+            background: white;
+            padding: 20px 25px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+            font-family: 'Outfit', sans-serif;
+            color: #2d3748;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        /* Header Style */
+        .voucher-header {
+            border-bottom: 3px double #e2e8f0;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .agency-info h4 {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+        }
+
+        .voucher-title-badge {
+            color: #000000;
+            padding: 0px 20px;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        /* IATA Logo Container */
+        .iata-container {
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .iata-logo {
+            height: 38px;
+            object-fit: contain;
+            margin-bottom: 4px;
+        }
+
+        .iata-text {
+            font-size: 8px;
+            font-weight: 700;
+            color: #64748b;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        /* Grid sections styling */
+        .voucher-section-title {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #1e3a8a;
+            border-bottom: 1px solid #bfdbfe;
+            padding-bottom: 4px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .voucher-info-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin-bottom: 16px;
+        }
+
+        .info-label {
+            font-size: 9px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+
+        .info-value {
+            font-size: 12px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .info-value-lg {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1e3a8a;
+        }
+
+        .badge-status {
+            background-color: #dcfce7;
+            color: #15803d;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            display: inline-block;
+            border: 1px solid #bbf7d0;
+        }
+
+        .badge-status.unconfirmed {
+            background-color: #fee2e2;
+            color: #b91c1c;
+            border-color: #fecaca;
+        }
+
+        /* Terms and Cancellation styling */
+        .terms-list {
+            padding-left: 0;
+            list-style: none;
+            margin-bottom: 0;
+        }
+
+        .terms-list li {
+            font-size: 10px;
+            line-height: 1.4;
+            color: #475569;
+            margin-bottom: 6px;
+            position: relative;
+            padding-left: 14px;
+        }
+
+        .terms-list li::before {
+            content: "•";
+            color: #2563eb;
+            font-weight: bold;
+            font-size: 14px;
+            position: absolute;
+            left: 0;
+            top: -2px;
+        }
+
+        .policy-box {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-left: 4px solid #f59e0b;
+            padding: 10px 15px;
+            border-radius: 4px;
+        }
+
+        .policy-text {
+            font-size: 11px;
+            font-weight: 700;
+            color: #b45309;
+            margin-bottom: 0;
+        }
+
+        /* Footer styling */
+        .voucher-footer {
+            border-top: 1px solid #e2e8f0;
+            padding-top: 12px;
+            margin-top: 25px;
+            font-size: 10px;
+            color: #64748b;
+        }
+
+        /* Print Specifics for A4 preview */
+        @media print {
+            body * {
+                visibility: hidden !important;
+            }
+
+            .voucher-template,
+            .voucher-template * {
+                visibility: visible !important;
+            }
+
+            .voucher-template {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 210mm !important;
+                height: 297mm !important;
+                padding: 20px 25px !important;
+                box-shadow: none !important;
+                margin: 0 !important;
+            }
+
+            @page {
+                size: A4 portrait;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="add-itinerary.html">
+                <i class="fas fa-plane-departure me-2"></i>flyeasygo
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="itineraries.html"><i class="fas fa-folder-open me-1"></i> Saved
+                            Itineraries</a>
+                    </li>
+
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active fw-bold text-warning border-bottom border-2 border-warning"
+                            href="hotel-voucher.html"><i class="fas fa-hotel me-1"></i> Hotel Voucher</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-info fw-bold" href="saved-vouchers.html"><i
+                                class="fas fa-file-pdf me-1"></i> Saved Vouchers</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link text-info fw-bold" href="saved-visas.html"><i
+                                class="fas fa-history me-1"></i> Saved Visas</a>
+                    </li>
+                    <li class="nav-item ms-2">
+                        <button class="btn btn-warning btn-sm text-dark fw-bold px-3" id="quickDownloadPDF">
+                            <i class="fas fa-file-pdf me-1"></i> Download Voucher
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid my-4 px-lg-5">
+        <div class="row g-4">
+            <!-- Left Column: Editor Form -->
+            <div class="col-xl-5">
+                <div class="editor-container p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                        <h4 class="fw-bold text-primary mb-0"><i class="fas fa-sliders-h me-2"></i>Voucher Details</h4>
+                        <button class="btn btn-outline-secondary btn-sm" onclick="resetToDefaults()">
+                            <i class="fas fa-undo me-1"></i> Load Default Revanta
+                        </button>
+                    </div>
+
+                    <form id="voucherForm">
+                        <!-- Agency Information -->
+                        <div class="card mb-3 border-light shadow-sm">
+                            <div class="card-header bg-light py-2">
+                                <h6 class="mb-0 text-dark fw-bold"><i class="fas fa-building me-2"></i>Agency
+                                    Information</h6>
+                            </div>
+                            <div class="card-body p-3">
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold">Agency Name</label>
+                                        <input type="text" class="form-control form-control-sm" id="inputAgencyName"
+                                            value="flyeasygo PVT LTD">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold">Agency Logo</label>
+                                        <input type="file" class="form-control form-control-sm" id="inputAgencyLogo"
+                                            accept="image/*" onchange="loadCustomLogo(this)">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-bold">Email</label>
+                                        <input type="email" class="form-control form-control-sm" id="inputAgencyEmail"
+                                            value="bookings@flyeasygo.com">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-bold">Phone</label>
+                                        <input type="text" class="form-control form-control-sm" id="inputAgencyPhone"
+                                            value="+91 98765 43210">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-bold">Website</label>
+                                        <input type="text" class="form-control form-control-sm" id="inputAgencyWebsite"
+                                            value="www.flyeasygo.com">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hotel Details -->
+                        <div class="card mb-3 border-light shadow-sm">
+                            <div class="card-header bg-light py-2">
+                                <h6 class="mb-0 text-dark fw-bold"><i class="fas fa-hotel me-2"></i>Hotel Details</h6>
+                            </div>
+                            <div class="card-body p-3">
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">Hotel Name</label>
+                                    <input type="text" class="form-control form-control-sm" id="inputHotelName"
+                                        required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">Address</label>
+                                    <textarea class="form-control form-control-sm" id="inputHotelAddress" rows="2"
+                                        required></textarea>
+                                </div>
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold">Phone No.</label>
+                                        <input type="text" class="form-control form-control-sm" id="inputHotelPhone"
+                                            required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold">Confirmation Code</label>
+                                        <input type="text" class="form-control form-control-sm" id="inputConfirmation"
+                                            required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stay Details -->
+                        <div class="card mb-3 border-light shadow-sm">
+                            <div class="card-header bg-light py-2">
+                                <h6 class="mb-0 text-dark fw-bold"><i class="fas fa-calendar-alt me-2"></i>Stay Details
+                                </h6>
+                            </div>
+                            <div class="card-body p-3">
+                                <div class="row g-2">
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-bold">Check-In Date</label>
+                                        <input type="text" class="form-control form-control-sm" id="inputCheckIn"
+                                            placeholder="e.g. 03 Jun 2026" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-bold">Check-Out Date</label>
+                                        <input type="text" class="form-control form-control-sm" id="inputCheckOut"
+                                            placeholder="e.g. 06 Jun 2026" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-bold">No. Of Nights</label>
+                                        <input type="number" class="form-control form-control-sm" id="inputNights"
+                                            min="1" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold">Booking Status</label>
+                                        <select class="form-select form-select-sm" id="inputStatus">
+                                            <option value="CONFIRMED" selected>CONFIRMED</option>
+                                            <option value="PENDING">PENDING</option>
+                                            <option value="CANCELLED">CANCELLED</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold">No. Of Rooms</label>
+                                        <input type="number" class="form-control form-control-sm" id="inputRooms"
+                                            min="1" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Passenger, Room & Meal Configuration -->
+                        <div class="card mb-3 border-light shadow-sm">
+                            <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0 text-dark fw-bold"><i class="fas fa-users me-2"></i>Passenger & Room
+                                    Configuration</h6>
+                                <button type="button" class="btn btn-sm btn-primary py-0" onclick="addRoomRow()"
+                                    style="font-size: 11px;">
+                                    <i class="fas fa-plus"></i> Add Room
+                                </button>
+                            </div>
+                            <div class="card-body p-3" id="roomRowsContainer">
+                                <!-- Dynamic rows will be inserted here by voucher.js -->
+                            </div>
+                        </div>
+
+                        <!-- Terms & Cancellation Policy -->
+                        <div class="card mb-3 border-light shadow-sm">
+                            <div class="card-header bg-light py-2">
+                                <h6 class="mb-0 text-dark fw-bold"><i class="fas fa-shield-alt me-2"></i>Terms &
+                                    Policies</h6>
+                            </div>
+                            <div class="card-body p-3">
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">Cancellation Policy</label>
+                                    <input type="text" class="form-control form-control-sm" id="inputCancellationPolicy"
+                                        value="Booking is Non Refundable.">
+                                </div>
+                                <div class="mb-0">
+                                    <label class="form-label small fw-bold">Booking Terms & Conditions (One per
+                                        line)</label>
+                                    <textarea class="form-control form-control-sm" id="inputTerms" rows="6"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="row g-2 mt-4">
+                            <div class="col-md-6 d-grid">
+                                <button type="button" class="btn btn-success btn-lg shadow-sm fw-bold"
+                                    id="saveVoucherBtn">
+                                    <i class="fas fa-save me-2"></i>Save
+                                </button>
+                            </div>
+                            <div class="col-md-6 d-grid">
+                                <button type="button" class="btn btn-primary btn-lg shadow-sm fw-bold"
+                                    id="generatePDFBtn">
+                                    <i class="fas fa-file-pdf me-2"></i>Download PDF
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right Column: Live High-Fidelity A4 Print Preview -->
+            <div class="col-xl-7">
+                <div class="preview-sticky">
+                    <div class="d-flex justify-content-between align-items-center mb-2 px-2">
+                        <span class="text-secondary small fw-bold"><i class="fas fa-eye me-1"></i>LIVE HIGH-FIDELITY
+                            PRINT PREVIEW (A4)</span>
+                        <span class="badge bg-dark text-white rounded-pill px-3 py-1">Standard A4 Scaling</span>
+                    </div>
+
+                    <!-- Scroll container simulating PDF canvas -->
+                    <div class="preview-scroll-container">
+                        <div id="voucherPDFTemplate" class="voucher-template">
+                            <!-- Voucher Header -->
+                            <div class="row align-items-center voucher-header">
+                                <div class="col-8">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="bg-white border rounded p-2 d-inline-flex align-items-center justify-content-center"
+                                            style="height: 60px;">
+                                            <img id="viewAgencyLogo"
+                                                src="https://adminapi.flyeasygo.com/assets-files/8e17aad2-9df5-4e81-a841-7551a0b03ddb.png"
+                                                alt="Logo"
+                                                style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                                        </div>
+                                        <div>
+                                            <h4 id="viewAgencyName" class="text-primary mb-0">flyeasygo PVT LTD</h4>
+                                            <div class="text-muted small" style="font-size: 10px;">
+                                                <span id="viewAgencyEmail">bookings@flyeasygo.com</span> |
+                                                <span id="viewAgencyPhone">+91 98765 43210</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-4 text-end iata-container">
+                                    <!-- Official IATA Logo fetched safely from Wikimedia -->
+                                    <img class="iata-logo"
+                                        src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT18Jq4JiE0rZPsL5qwvLMGoqjlNVvmCholOQ&s"
+                                        alt="IATA Logo">
+
+                                </div>
+                            </div>
+
+                            <div class="text-center mb-2">
+                                <div class="voucher-title-badge">HOTEL BOOKING VOUCHER</div>
+                            </div>
+
+                            <!-- Booking Overview Cards -->
+                            <div class="row g-2 mb-3">
+                                <div class="col-4">
+                                    <div class="bg-light p-2 border rounded text-center">
+                                        <div class="info-label">Confirmation No.</div>
+                                        <div id="viewConfirmation" class="info-value-lg text-danger">52164</div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="bg-light p-2 border rounded text-center">
+                                        <div class="info-label">Booking Status</div>
+                                        <div><span id="viewStatus" class="badge-status">CONFIRMED</span></div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="bg-light p-2 border rounded text-center">
+                                        <div class="info-label">No. of Nights</div>
+                                        <div id="viewNights" class="info-value-lg">03</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Hotel Details Section -->
+                            <div class="voucher-section-title">
+                                <i class="fas fa-hotel"></i> Hotel Accommodation Details
+                            </div>
+                            <div class="voucher-info-box">
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <div class="info-label">Hotel Name</div>
+                                        <div id="viewHotelName" class="info-value text-primary fs-5"
+                                            style="font-weight: 700;">Best Western Plus Revanta</div>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="info-label">Hotel Address</div>
+                                        <div id="viewHotelAddress" class="info-value" style="font-size: 11px;">Satobari
+                                            Hills, Near Dal Lake, Upper, McLeod Ganj, Dharamshala, Dhial, Himachal
+                                            Pradesh 176216</div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="info-label">Hotel Phone No.</div>
+                                        <div id="viewHotelPhone" class="info-value">8091402800</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Stay & Room Details Section -->
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <div class="voucher-section-title">
+                                        <i class="fas fa-clock"></i> Check-In & Check-Out
+                                    </div>
+                                    <div class="voucher-info-box h-100 mb-0">
+                                        <div class="row g-2">
+                                            <div class="col-6">
+                                                <div class="info-label">Check-In Date</div>
+                                                <div id="viewCheckIn" class="info-value">03 Jun 2026</div>
+                                                <div class="text-muted" style="font-size: 9px; margin-top: 2px;">From
+                                                    2:00 PM</div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="info-label">Check-Out Date</div>
+                                                <div id="viewCheckOut" class="info-value">06 Jun 2026</div>
+                                                <div class="text-muted" style="font-size: 9px; margin-top: 2px;">Until
+                                                    12:00 PM</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Passenger, Room & Meal Configuration Section -->
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <div class="voucher-section-title mt-3" style="position: relative; top: 12px;">
+                                        <i class="fas fa-users"></i> Room, Meal & Passenger Configuration
+                                    </div>
+                                    <table class="table table-bordered table-sm mt-4 mb-3"
+                                        style="font-size: 10px; border-color: #5a5a5a; border-radius: 4px;">
+                                        <thead class="text-secondary"
+                                            style="background-color: #f8fafc; font-size: 9px; text-transform: uppercase;">
+                                            <tr style="border-color: #5a5a5a;">
+                                                <th style="border-color: #5a5a5a;" class="fw-bold px-2 py-1.5"
+                                                    style="width: 15%;">Room</th>
+                                                <th style="border-color: #5a5a5a;" class="fw-bold px-2 py-1.5"
+                                                    style="width: 40%;">Passenger Name(s)
+                                                </th>
+                                                <th style="border-color: #5a5a5a;" class="fw-bold px-2 py-1.5"
+                                                    style="width: 25%;">Room Type</th>
+                                                <th style="border-color: #5a5a5a;" class="fw-bold px-2 py-1.5"
+                                                    style="width: 20%;">Meal Type</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="viewRoomPaxTable">
+                                            <!-- Dynamic table rows -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Terms & Cancellation Policies -->
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <div class="voucher-section-title">
+                                        <i class="fas fa-info-circle"></i> Booking Terms & Conditions
+                                    </div>
+                                    <div class="bg-light border rounded p-3" style="height: auto; overflow: hidden;">
+                                        <ul id="viewTerms" class="terms-list">
+                                            <!-- Dynamically Populated -->
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="voucher-section-title">
+                                        <i class="fas fa-exclamation-circle"></i> Cancellation Policy
+                                    </div>
+                                    <div class="policy-box">
+                                        <p id="viewCancellationPolicy" class="policy-text">Booking is Non Refundable.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Footer Contact Info -->
+                            <div class="voucher-footer text-center">
+                                <p class="mb-1 fw-bold text-dark">Please feel free to call us or write to us for any
+                                    clarification.</p>
+                                <p class="text-muted mb-0" style="font-size: 9px;">Thank you for booking with <span
+                                        id="viewFooterAgencyName">flyeasygo PVT LTD</span>. Have a wonderful and
+                                    memorable stay!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- html2pdf.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Dedicated Voucher Javascript -->
+    <script src="voucher.js"></script>
+</body>
+
+</html>

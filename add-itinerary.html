@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Itinerary Generator</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+    <!-- Quill CSS -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+
+    <!-- Quill JS -->
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <style>
+        /* High-fidelity PDF Preview wrapper */
+        .preview-sticky {
+            position: sticky;
+            top: 90px;
+            z-index: 10;
+        }
+
+        .preview-scroll-container {
+            max-height: calc(100vh - 140px);
+            overflow-y: auto;
+            border-radius: 12px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+            background: #e2e8f0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        #pdfTemplate {
+            width: 210mm;
+            min-height: 297mm;
+            background: white;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+            font-family: 'Outfit', sans-serif;
+            color: #2d3748;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .day-editor {
+            height: 180px !important;
+        }
+
+        .editor-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="add-itinerary.html">
+                <i class="fas fa-plane-departure me-2"></i>flyeasygo
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="itineraries.html"><i class="fas fa-folder-open me-1"></i> Saved
+                            Itineraries</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active fw-bold border-bottom border-2 border-warning"
+                            href="add-itinerary.html"><i class="fas fa-plus-circle me-1"></i> Create Itinerary</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link text-info fw-bold" href="saved-vouchers.html"><i
+                                class="fas fa-file-pdf me-1"></i> Saved Vouchers</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link text-info fw-bold" href="saved-visas.html"><i
+                                class="fas fa-history me-1"></i> Saved Visas</a>
+                    </li>
+                    <li class="nav-item ms-2">
+                        <button class="btn btn-warning btn-sm text-dark fw-bold px-3" id="exportPDFBtn">
+                            <i class="fas fa-file-pdf me-1"></i> Export PDF
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid my-4 px-lg-5">
+        <div class="row g-4">
+            <!-- Left Column: Form Editor -->
+            <div class="col-xl-12">
+                <div class="editor-container p-4">
+                    <form id="itineraryForm">
+                        <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                            <h4 class="fw-bold text-primary mb-0" id="pageMainTitle"><i
+                                    class="fas fa-sliders-h me-2"></i>Itinerary Details</h4>
+                            <button type="submit" class="btn btn-primary btn-sm px-3 shadow-sm">
+                                <i class="fas fa-save me-1"></i>Save
+                            </button>
+                        </div>
+
+                        <!-- Company Information Section -->
+                        <div class="card shadow-sm mb-4 border-primary-subtle">
+                            <div class="card-header bg-white text-primary py-3">
+                                <h5 class="mb-0"><i class="fas fa-building me-2"></i>Company Information</h5>
+                            </div>
+                            <div class="card-body p-4">
+                                <div class="row g-4">
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-semibold">Company Logo</label>
+                                        <input type="file" class="form-control" id="companyLogo" accept="image/*"
+                                            onchange="previewLogo(this)">
+                                        <div class="mt-2 text-center border rounded p-2 bg-light"
+                                            style="height: 100px; display: flex; align-items: center; justify-content: center;">
+                                            <img id="logoPreview" src="" alt="Logo Preview"
+                                                style="max-height: 80px; display: none;">
+                                            <span id="logoPlaceholder" class="text-muted small">No Logo Selected</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">Company Name</label>
+                                            <input type="text" class="form-control" id="companyName"
+                                                placeholder="e.g. flyeasygo Pvt Ltd">
+                                        </div>
+                                        <div class="mb-0">
+                                            <label class="form-label fw-semibold">Email Address</label>
+                                            <input type="email" class="form-control" id="companyEmail"
+                                                placeholder="contact@company.com">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">Website</label>
+                                            <input type="text" class="form-control" id="companyWebsite"
+                                                placeholder="www.company.com">
+                                        </div>
+                                        <div class="mb-0">
+                                            <label class="form-label fw-semibold">Contact Number</label>
+                                            <input type="text" class="form-control" id="companyPhone"
+                                                placeholder="+91 98765 43210">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Package Summary Section -->
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-primary text-white py-3">
+                                <h5 class="mb-0"><i class="fas fa-suitcase me-2"></i>Package Summary</h5>
+                            </div>
+                            <div class="card-body p-4">
+                                <div class="row g-4">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold">Trip Name <span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="tripName"
+                                            placeholder="e.g. Summer Getaway 2024" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold">Destination <span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="destination"
+                                            placeholder="e.g. Bali, Indonesia" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold">Travel Dates <span
+                                                class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <input type="date" class="form-control" id="startDate" required>
+                                            <span class="input-group-text bg-light">to</span>
+                                            <input type="date" class="form-control" id="endDate" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold">Total Package Cost <span
+                                                class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="form-control" id="totalCost" placeholder="0.00"
+                                                required step="0.01">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-semibold">Number of Travelers</label>
+                                        <input type="number" class="form-control" id="travelers" value="2" min="1">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-semibold">Number of Rooms</label>
+                                        <input type="number" class="form-control" id="rooms" value="1" min="1">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-semibold">Transportation</label>
+                                        <select class="form-select" id="vehicle">
+                                            <option value="Private Car">Private Car</option>
+                                            <option value="Van">Van</option>
+                                            <option value="Bus">Bus</option>
+                                            <option value="Scooter">Scooter</option>
+                                            <option value="Flight">Flight</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold">Pickup Point</label>
+                                        <input type="text" class="form-control" id="pickup"
+                                            placeholder="Airport, Station, or Hotel">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold">Drop-off Point</label>
+                                        <input type="text" class="form-control" id="dropoff"
+                                            placeholder="Airport, Station, or Hotel">
+                                    </div>
+                                    <div class="col-md-12">
+                                        <label class="form-label fw-semibold">Meal Plan</label>
+                                        <select class="form-select" id="mealPlan">
+                                            <option value="All Inclusive">All Inclusive (Breakfast, Lunch, Dinner)
+                                            </option>
+                                            <option value="Breakfast Only">Breakfast Only</option>
+                                            <option value="Half Board">Half Board (Breakfast + Lunch/Dinner)</option>
+                                            <option value="Full Board">Full Board (All meals included)</option>
+                                            <option value="No Meals">No Meals</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Inclusions/Exclusions Section -->
+                        <div class="row mb-4 g-4">
+                            <div class="col-md-6">
+                                <div class="card shadow-sm h-100 border-success-subtle">
+                                    <div class="card-header bg-success text-white py-3">
+                                        <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i>Package Inclusions</h5>
+                                    </div>
+                                    <div class="card-body p-4">
+                                        <div id="inclusionsEditor" class="day-editor" style="height: 250px;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card shadow-sm h-100 border-danger-subtle">
+                                    <div class="card-header bg-danger text-white py-3">
+                                        <h5 class="mb-0"><i class="fas fa-times-circle me-2"></i>Package Exclusions</h5>
+                                    </div>
+                                    <div class="card-body p-4">
+                                        <div id="exclusionsEditor" class="day-editor" style="height: 250px;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hotel/Accommodation Section -->
+                        <div class="card shadow-sm mb-4">
+                            <div
+                                class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="fas fa-hotel me-2"></i>Accommodations</h5>
+                                <button type="button" class="btn btn-light btn-sm fw-bold" onclick="addHotel()">
+                                    <i class="fas fa-plus me-1"></i> Add Hotel
+                                </button>
+                            </div>
+                            <div class="card-body p-4">
+                                <div id="hotelsList"></div>
+                            </div>
+                        </div>
+
+                        <!-- Day-wise Itinerary Section -->
+                        <div class="card shadow-sm mb-4">
+                            <div
+                                class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Day-wise Itinerary</h5>
+                                <button type="button" class="btn btn-light btn-sm fw-bold" onclick="addDay()">
+                                    <i class="fas fa-plus me-1"></i> Add Day
+                                </button>
+                            </div>
+                            <div class="card-body p-4">
+                                <div id="daysList"></div>
+                            </div>
+                        </div>
+
+                        <!-- Important Notes & Cancellation Policy -->
+                        <div class="row mb-5 g-4">
+                            <div class="col-md-6">
+                                <div class="card shadow-sm h-100 border-info-subtle">
+                                    <div class="card-header bg-info text-white py-3">
+                                        <h5 class="mb-0"><i class="fas fa-sticky-note me-2"></i>Important Notes</h5>
+                                    </div>
+                                    <div class="card-body p-4">
+                                        <div id="importantNotesEditor" class="day-editor"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card shadow-sm h-100 border-warning-subtle">
+                                    <div class="card-header bg-warning text-dark py-3">
+                                        <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Cancellation
+                                            Policy</h5>
+                                    </div>
+                                    <div class="card-body p-4">
+                                        <div id="cancellationPolicyEditor" class="day-editor"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg px-5 shadow w-100">
+                                <i class="fas fa-save me-2"></i>Save Final Itinerary
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right Column: Live A4 PDF Preview -->
+            <div class="col-xl-12">
+                <div class="preview-sticky">
+                    <div class="preview-scroll-container" id="pdfTemplateWrapper">
+                        <div id="pdfTemplate" class="bg-white" style="width: 210mm; margin: 0; height: 100%;">
+
+                            <!-- Header: Deep navy gradient + inline style (no green) -->
+                            <div class="bg-deep-navy text-white px-4 py-4 position-relative">
+                                <div class="row align-items-center">
+                                    <div class="col-8 d-flex align-items-center gap-3">
+                                        <div class="bg-white rounded-3 p-2 shadow-sm d-inline-flex"
+                                            style="min-width: 70px; justify-content: center;">
+                                            <img id="pdfLogo"
+                                                src="https://adminapi.flyeasygo.com/assets-files/8e17aad2-9df5-4e81-a841-7551a0b03ddb.png"
+                                                alt="Company Logo"
+                                                style="max-height: 40px; max-width: 100px; display: none;">
+                                        </div>
+                                        <div>
+                                            <h1 id="pdfCompanyName" class="fw-bold mb-0"
+                                                style="font-size: 16px; letter-spacing: -0.5px;">
+                                                LUXURY EXPLORER</h1>
+                                            <p id="pdfCompanyTagline"
+                                                class="text-warning small text-uppercase fw-semibold mb-0 mt-1"
+                                                style="letter-spacing: 1.5px; font-size: 9px;">CURATED ADVENTURES</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-4 text-end">
+                                        <div class="bg-white bg-opacity-10 d-inline-block px-3 py-1 rounded-pill">
+                                            <span class="fw-semibold" style="font-size: 11px;"><span
+                                                    class="text-warning">TRAVEL</span>
+                                                PROPOSAL</span>
+                                        </div>
+                                        <div class="opacity-75 mt-1" style="font-size: 10px;">Date: <span
+                                                id="pdfPrintDate"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Main content padding -->
+                            <div class="p-4 p-xl-5">
+                                <!-- Trip Title & Highlights -->
+                                <div class="mb-3 pb-1 border-bottom border-2">
+                                    <h2 id="pdfTripName" class="fw-bold text-dark mb-1" style="font-size: 20px;">
+                                        Discover
+                                        Patagonia</h2>
+                                    <div class="d-flex flex-wrap gap-4 mt-2 text-secondary" style="font-size: 11px;">
+                                        <span><i class="fas fa-map-marker-alt accent-orange me-2"></i> <span
+                                                id="pdfDestination" class="fw-semibold">El Calafate,
+                                                Argentina</span></span>
+                                        <span><i class="fas fa-calendar-alt accent-orange me-2"></i> <span id="pdfDates"
+                                                class="fw-semibold">Dec 10 - Dec 18, 2025</span></span>
+                                    </div>
+                                    <hr class="accent-hr mt-1">
+                                </div>
+
+                                <div class="row g-3 mb-3">
+                                    <div class="col-3">
+                                        <div class="card border-0 shadow-sm h-100 text-center py-2 pdf-summary-card">
+                                            <div class="card-body px-1">
+                                                <div class="text-uppercase text-secondary fw-bold"
+                                                    style="font-size: 8px;"><i
+                                                        class="fas fa-tag accent-orange me-1"></i> Package Cost</div>
+                                                <div id="pdfCost" class="fw-bold text-dark mt-1"
+                                                    style="font-size: 14px;">$4,250</div>
+                                                <div class="text-muted" style="font-size: 8px;">per person</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="card border-0 shadow-sm h-100 text-center py-2 pdf-summary-card">
+                                            <div class="card-body px-1">
+                                                <div class="text-uppercase text-secondary fw-bold"
+                                                    style="font-size: 8px;"><i
+                                                        class="fas fa-users accent-orange me-1"></i> Travelers</div>
+                                                <div id="pdfTravelers" class="fw-bold text-dark mt-1"
+                                                    style="font-size: 14px;">2 Adults
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="card border-0 shadow-sm h-100 text-center py-2 pdf-summary-card">
+                                            <div class="card-body px-1">
+                                                <div class="text-uppercase text-secondary fw-bold"
+                                                    style="font-size: 8px;"><i
+                                                        class="fas fa-car-side accent-orange me-1"></i> Vehicle</div>
+                                                <div id="pdfVehicle" class="fw-bold text-dark mt-1"
+                                                    style="font-size: 11px;">4x4 Toyota
+                                                    Hilux</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="card border-0 shadow-sm h-100 text-center py-2 pdf-summary-card">
+                                            <div class="card-body px-1">
+                                                <div class="text-uppercase text-secondary fw-bold"
+                                                    style="font-size: 8px;"><i
+                                                        class="fas fa-utensils accent-orange me-1"></i> Meal Plan</div>
+                                                <div id="pdfMealPlan" class="fw-bold text-dark mt-1"
+                                                    style="font-size: 11px;">Full Board
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Hotel Table: Bootstrap table + custom striped -->
+                                <div class="mb-3">
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <i class="fas fa-hotel fs-5 accent-orange"></i>
+                                        <h3 class="fw-bold mb-0 text-dark" style="font-size: 13px;">LUXURY
+                                            ACCOMMODATIONS</h3>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table
+                                            class="table table-bordered table-custom align-middle shadow-sm rounded overflow-hidden">
+                                            <thead class="bg-dark text-white">
+                                                <tr>
+                                                    <th>HOTEL / RESORT NAME</th>
+                                                    <th>NIGHTS</th>
+                                                    <th>ROOM CATEGORY</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="pdfHotelsList">
+                                                <tr>
+                                                    <td>Explora Patagonia Lodge</td>
+                                                    <td>4</td>
+                                                    <td>Deluxe Mountain View</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Awasi Torres del Paine</td>
+                                                    <td>3</td>
+                                                    <td>Private Villa Suite</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- Itinerary / Adventure Journey with Bootstrap cards -->
+                                <div class="mb-3">
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <i class="fas fa-mountain fs-5 accent-orange"></i>
+                                        <h3 class="fw-bold mb-0 text-dark" style="font-size: 13px;">THE ADVENTURE
+                                            JOURNEY</h3>
+                                    </div>
+                                    <div id="pdfDaysList" class="mt-4">
+                                        <!-- Example day cards using Bootstrap classes + custom day icon inline style -->
+                                        <div class="card border-0 shadow-sm mb-3 overflow-hidden">
+                                            <div class="row g-0 align-items-center">
+                                                <div class="col-2 bg-light text-center py-2 d-flex justify-content-center align-items-center"
+                                                    style="border-right: 2px solid #f1f5f9;">
+                                                    <div class="day-icon"
+                                                        style="width: 24px; height: 24px; font-size: 11px;">1</div>
+                                                </div>
+                                                <div class="col-10">
+                                                    <div class="card-body py-2">
+                                                        <h5 class="fw-bold text-dark mb-1 mt-3"
+                                                            style="font-size: 12px;">Arrival &
+                                                            Welcome
+                                                            Dinner</h5>
+                                                        <div class="text-secondary"
+                                                            style="font-size: 10.5px; line-height: 1.4;">
+                                                            <i class="fas fa-plane-departure accent-orange me-1"></i>
+                                                            Arrival at El
+                                                            Calafate...
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Inclusions / Exclusions + Advisory + Policy (two column layout) -->
+                                <div class="row g-4 mb-4 mt-3">
+                                    <div class="col-12">
+                                        <div class="card border-0 bg-light h-100 p-4" style="background: #fefcf8;">
+                                            <div class="d-flex align-items-center gap-2 border-bottom pb-2 mb-3 mt-3">
+                                                <i class="fas fa-check-circle fs-5 text-success"></i>
+                                                <h4 class="fw-bold mb-0 text-dark" style="font-size: 12px;">INCLUSIONS
+                                                </h4>
+                                            </div>
+                                            <div id="pdfInclusions">
+                                                <ul class="list-check">
+                                                    <li> 7 nights luxury accommodation as per itinerary</li>
+                                                    <li> Daily gourmet breakfast + 4 exclusive dinners</li>
+                                                    <li> All private guided excursions & national park fees</li>
+                                                    <li> Private airport transfers + premium 4x4 vehicle</li>
+                                                    <li> 24/7 concierge assistance</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="card border-0 bg-white h-100 p-4 shadow-sm">
+                                            <div class="d-flex align-items-center gap-2 border-bottom pb-2 mb-3">
+                                                <i class="fas fa-times-circle fs-5 text-danger"></i>
+                                                <h4 class="fw-bold mb-0 text-dark" style="font-size: 12px;">EXCLUSIONS
+                                                </h4>
+                                            </div>
+                                            <div id="pdfExclusions">
+                                                <ul class="list-times">
+                                                    <li> International & domestic flights</li>
+                                                    <li> Alcoholic beverages & personal extras</li>
+                                                    <li> Travel insurance (recommended)</li>
+                                                    <li> Guide gratuities (optional)</li>
+                                                    <li> Visa processing fees</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Important Advisory: clean card with orange left border -->
+                                <div class="card mb-3 border-0 shadow-sm advisory-card">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex align-items-center gap-3 mb-2">
+                                            <i class="fas fa-shield-alt fs-4 accent-orange"></i>
+                                            <h5 class="fw-bold mb-0 text-dark" style="font-size: 12px;">IMPORTANT
+                                                ADVISORY</h5>
+                                        </div>
+                                        <div id="pdfNotes" class="text-secondary small" style="font-size: 10.5px;">
+                                            <p class="mb-1">✓ Passport validity: minimum 6 months from return date. Visa
+                                                not required
+                                                for most western countries (check your nationality).</p>
+                                            <p class="mb-1">✓ Health: No mandatory vaccines, but travel insurance with
+                                                medical
+                                                evacuation strongly advised. Patagonia weather is unpredictable; pack
+                                                layers and
+                                                waterproof gear.</p>
+                                            <p class="mb-0">✓ We recommend reconfirming flight schedules 72h prior
+                                                departure.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Booking & Cancellation Policy -->
+                                <div class="card border-0 shadow-sm policy-card">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex align-items-center gap-3 mb-2">
+                                            <i class="fas fa-file-invoice-dollar fs-4 text-dark"></i>
+                                            <h5 class="fw-bold mb-0 text-dark" style="font-size: 12px;">BOOKING &
+                                                CANCELLATION POLICY
+                                            </h5>
+                                        </div>
+                                        <div id="pdfPolicy" class="text-secondary small lh-base"
+                                            style="font-size: 10.5px;">
+                                            <p><strong>Deposit:</strong> 30% non-refundable deposit to confirm
+                                                reservation. Final
+                                                payment due 60 days prior to departure.<br>
+                                                <strong>Cancellation:</strong> Free cancellation up to 75 days before
+                                                departure (full
+                                                refund less admin fee). 50% cancellation fee between 30-74 days. No
+                                                refund within 29
+                                                days.<br>
+                                                <strong>Changes:</strong> Subject to availability and applicable change
+                                                fees. We
+                                                recommend travel protection.
+                                            </p>
+                                            <p class="mb-0 fw-semibold">* All prices are in USD, based on double
+                                                occupancy.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Footer (Deep navy, warm accents) -->
+                            <div class="bg-dark text-white px-4 py-3 pdf-footer mt-3">
+                                <div class="text-center">
+                                    <div class="mb-2">
+                                        <i class="fas fa-compass fs-4 text-warning opacity-75"></i>
+                                    </div>
+                                    <p class="text-warning text-uppercase fw-semibold mb-2"
+                                        style="letter-spacing: 1.5px; font-size: 10px;">
+                                        Ready for your next adventure?</p>
+
+                                    <div class="d-flex justify-content-center flex-wrap gap-4 mb-3"
+                                        style="font-size: 10px;">
+                                        <div><i class="fas fa-envelope me-1 accent-orange"></i> <span
+                                                id="pdfFooterEmail"></span></div>
+                                        <div><i class="fas fa-globe me-1 accent-orange"></i> <span
+                                                id="pdfFooterWebsite"></span></div>
+                                        <div><i class="fas fa-phone-alt me-1 accent-orange"></i> <span
+                                                id="pdfFooterPhone"></span></div>
+                                    </div>
+
+                                    <div class="opacity-50 pt-3 border-top border-secondary border-opacity-25"
+                                        style="font-size: 9px;">
+                                        <span id="pdfFooterCompanyName" class="fw-semibold"></span> — Tailor-made
+                                        journeys. All rights reserved.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- html2pdf.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- SweetAlert2 for nice alerts -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Custom JS -->
+    <script src="index.js"></script>
+</body>
+
+</html>

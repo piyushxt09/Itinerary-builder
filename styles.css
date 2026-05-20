@@ -1,0 +1,697 @@
+/* Global Styles */
+:root {
+    --primary-color: #007bd1;
+    --primary-dark: #005c9e;
+    --accent-color: #f8ad13;
+    --success-color: #198754;
+    --danger-color: #dc3545;
+    --bg-light: #f8f9fa;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+body {
+    background-color: #f1f4f9;
+    font-family: "Poppins", sans-serif !important;
+    color: #2b2d42;
+}
+
+.app-navbar {
+    backdrop-filter: blur(14px);
+}
+
+.page-hero {
+    padding: 2rem 0 0;
+}
+
+.page-content {
+    padding-top: 2rem;
+    padding-bottom: 3rem;
+}
+
+.hero-panel {
+    background:
+        radial-gradient(circle at top right, rgba(248, 173, 19, 0.22), transparent 30%),
+        linear-gradient(135deg, #0b4f88 0%, #007bd1 52%, #5bc0eb 100%);
+    border-radius: 28px;
+    color: #fff;
+    padding: 2rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1.7fr) minmax(260px, 1fr);
+    gap: 1.5rem;
+    box-shadow: 0 24px 60px rgba(0, 70, 122, 0.22);
+}
+
+.hero-panel-compact {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+}
+
+.eyebrow-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.8rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff2cc;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.hero-title {
+    font-size: clamp(1.9rem, 4vw, 3rem);
+    line-height: 1.12;
+    margin: 1rem 0 0.85rem;
+    font-weight: 700;
+}
+
+.hero-copy {
+    max-width: 760px;
+    color: rgba(255, 255, 255, 0.88);
+    font-size: 1rem;
+}
+
+.hero-metrics {
+    display: grid;
+    gap: 1rem;
+}
+
+.hero-metric-card,
+.overview-card,
+.library-note {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 20px;
+    padding: 1rem 1.1rem;
+}
+
+.text-primary{
+    color: #1c99e6 !important;
+}
+
+.bg-primary{
+    background-color: #1c99e6 !important;
+}
+
+.btn-outline-primary{
+
+    &:hover {
+        background-color: #1c99e6 !important;
+    }
+    
+}
+
+.hero-metric-value,
+.overview-value {
+    display: block;
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.hero-metric-label,
+.overview-label,
+.library-note-label {
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    opacity: 0.82;
+}
+
+.section-intro {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 1rem;
+}
+
+.section-intro-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.card-subtitle {
+    font-size: 0.88rem;
+    font-weight: 500;
+    margin-top: 0.45rem;
+    opacity: 0.9;
+}
+
+.logo-dropzone {
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo-preview {
+    max-height: 80px;
+    display: none;
+}
+
+.overview-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.overview-card {
+    background: linear-gradient(180deg, #ffffff, #f7fbff);
+    border: 1px solid rgba(0, 123, 209, 0.08);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+}
+
+.overview-label {
+    display: block;
+    color: #6c757d;
+    margin-bottom: 0.35rem;
+}
+
+.search-input-wrap {
+    position: relative;
+}
+
+.search-input-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #7b8ba1;
+}
+
+.search-input {
+    padding-left: 42px;
+}
+
+.library-note {
+    background: linear-gradient(135deg, rgba(0, 123, 209, 0.08), rgba(248, 173, 19, 0.16));
+    border: 1px solid rgba(0, 123, 209, 0.08);
+    color: #304255;
+}
+
+.library-note-label {
+    display: inline-block;
+    margin-bottom: 0.45rem;
+    color: var(--primary-dark);
+    font-weight: 700;
+}
+
+.ql-container {
+    height: 400px !important;
+}
+
+.navbar {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%) !important;
+}
+
+.card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease;
+}
+
+.card-header {
+    border-top-left-radius: 16px !important;
+    border-top-right-radius: 16px !important;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    border-bottom: 0;
+}
+
+/* Form Controls */
+.form-control,
+.form-select {
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+    padding: 12px 15px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(27, 67, 50, 0.1);
+}
+
+.input-group-text {
+    border-radius: 10px 0 0 10px;
+    border: 1px solid #e0e0e0;
+    background-color: #f8f9fa;
+}
+
+/* Buttons */
+.btn {
+    border-radius: 12px;
+    padding: 10px 24px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(27, 67, 50, 0.3);
+}
+
+/* Itinerary Cards */
+.day-card,
+.hotel-card {
+    background: white;
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+
+.day-card h6,
+.hotel-card h6 {
+    text-transform: uppercase;
+    font-size: 13px;
+    letter-spacing: 1px;
+}
+
+/* Inclusion/Exclusion Items */
+.inclusion-item,
+.exclusion-item {
+    border-radius: 10px !important;
+    padding: 12px 16px !important;
+    margin-bottom: 12px !important;
+}
+
+/* Quill Editor Styling */
+.day-editor {
+    height: 200px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+.ql-toolbar {
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border-color: #e0e0e0 !important;
+    background-color: #fafafa;
+}
+
+.ql-container {
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    border-color: #e0e0e0 !important;
+    font-family: inherit;
+}
+
+/* Table Styling */
+.table thead th {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #6c757d;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.table tbody td {
+    padding: 16px;
+    border-bottom: 1px solid #f8f9fa;
+}
+
+#itinerariesTable tbody tr:hover {
+    background: rgba(0, 123, 209, 0.03);
+}
+
+.itinerary-meta {
+    min-width: 0;
+}
+
+.itinerary-name {
+    font-weight: 700;
+    color: #16324f;
+}
+
+.itinerary-company {
+    font-size: 0.83rem;
+}
+
+.itinerary-logo-thumb {
+    height: 38px;
+    width: 38px;
+    object-fit: contain;
+    margin-right: 12px;
+}
+
+.action-btn-group .btn {
+    padding: 0.48rem 0.78rem;
+}
+
+/* PDF Template Preview */
+#pdfTemplate {
+    background: white;
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.1);
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 20px;
+    }
+
+    .hero-panel,
+    .hero-panel-compact,
+    .overview-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hero-panel,
+    .hero-panel-compact {
+        padding: 1.5rem;
+    }
+
+    .section-intro {
+        flex-direction: column;
+        align-items: start;
+    }
+}
+
+/* Custom travel proposal styles used in PDF templates */
+@media print {
+    /* Hide everything on the page */
+    body * {
+        visibility: hidden !important;
+    }
+    
+    /* Make sure #pdfTemplateWrapper and all its children are visible */
+    #pdfTemplateWrapper,
+    #pdfTemplateWrapper * {
+        visibility: visible !important;
+    }
+    
+    /* Position the template wrapper perfectly to take full screen */
+    #pdfTemplateWrapper {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        background: white !important;
+        display: block !important;
+        visibility: visible !important;
+    }
+    
+    #pdfTemplate {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 210mm !important; /* Exactly A4 standard size */
+        min-height: 297mm !important;
+        margin: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        visibility: visible !important;
+    }
+    
+    /* Avoid breaking inside cards, tables, sections, days, and footers */
+    .card, tr, .day-card, .mb-4, .mb-5, .bg-deep-navy, .bg-dark {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+    
+    /* Page configurations for standard A4 printing with zero margins */
+    @page {
+        size: A4 portrait;
+        margin: 0;
+    }
+}
+
+/* subtle global overrides - Primary Blue (#007bd1) and Secondary Gold (#f8ad13) */
+.accent-orange {
+    color: var(--accent-color) !important;
+}
+
+.bg-deep-navy {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%) !important;
+    border-bottom: 4px solid var(--accent-color) !important;
+}
+
+.border-orange {
+    border-left: 5px solid var(--accent-color) !important;
+}
+
+.badge-orange {
+    background-color: var(--accent-color) !important;
+    color: white !important;
+}
+
+.card-hover {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -12px rgba(0, 0, 0, 0.15);
+}
+
+.day-icon {
+    background-color: var(--accent-color) !important;
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-weight: 800;
+    font-size: 1rem;
+    color: white;
+}
+
+/* Custom layout classes to eliminate hardcoded colors from HTML templates */
+.pdf-summary-card {
+    border-top: 3px solid var(--accent-color) !important;
+}
+
+.advisory-card {
+    border-left: 6px solid var(--accent-color) !important;
+    background: #fafcff !important;
+}
+
+.policy-card {
+    border-left: 6px solid var(--primary-color) !important;
+}
+
+.pdf-footer {
+    background: var(--primary-dark) !important;
+    border-top: 4px solid var(--accent-color) !important;
+}
+
+#pdfTripName {
+    color: var(--primary-dark) !important;
+}
+
+.footer-links a {
+    text-decoration: none;
+    color: #facc15;
+}
+
+.footer-links a:hover {
+    color: #ffffff;
+}
+
+hr.accent-hr {
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent-color), #fcd34d, transparent);
+    opacity: 0.7;
+    width: 100%;
+    margin: 0.5rem 0 1.2rem 0;
+}
+
+.table-custom thead tr {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+}
+
+.table-custom thead tr th {
+    border-color: var(--primary-color) !important;
+}
+
+.table-custom td,
+.table-custom th {
+    padding: 1rem 1.2rem;
+    vertical-align: middle;
+}
+
+.list-check {
+    list-style: none;
+    padding-left: 0;
+}
+
+.list-check li {
+    margin-bottom: 12px;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+}
+
+.list-check li i {
+    color: #198754; /* Beautiful Green for Inclusions */
+    width: 20px;
+}
+
+.list-times {
+    list-style: none;
+    padding-left: 0;
+}
+
+.list-times li {
+    margin-bottom: 12px;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+}
+
+.list-times li i {
+    color: #dc3545; /* Beautiful Red for Exclusions */
+    width: 20px;
+}
+
+/* Custom styles for Quill-generated lists in PDF Template */
+#pdfInclusions ul {
+    list-style: none !important;
+    padding-left: 0 !important;
+    margin: 0 !important;
+}
+
+#pdfInclusions ul li {
+    margin-bottom: 12px !important;
+    position: relative !important;
+    padding-left: 28px !important;
+    font-size: 14px !important;
+    color: #444 !important;
+    line-height: 1.6 !important;
+}
+
+#pdfInclusions ul li::before {
+    content: "\f058" !important; /* FontAwesome check-circle unicode */
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+    color: #198754 !important; /* Premium Green */
+    position: absolute !important;
+    left: 0 !important;
+    top: 2px !important;
+    font-size: 16px !important;
+}
+
+#pdfExclusions ul {
+    list-style: none !important;
+    padding-left: 0 !important;
+    margin: 0 !important;
+}
+
+#pdfExclusions ul li {
+    margin-bottom: 12px !important;
+    position: relative !important;
+    padding-left: 28px !important;
+    font-size: 14px !important;
+    color: #444 !important;
+    line-height: 1.6 !important;
+}
+
+#pdfExclusions ul li::before {
+    content: "\f057" !important; /* FontAwesome times-circle unicode */
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+    color: #dc3545 !important; /* Premium Red */
+    position: absolute !important;
+    left: 0 !important;
+    top: 2px !important;
+    font-size: 16px !important;
+}
+
+/* Scoped high-fidelity PDF Template styles and typography scaling (Max 20px) */
+#pdfTemplate {
+    font-size: 11px !important;
+    line-height: 1.5 !important;
+    font-family: 'Outfit', 'Inter', sans-serif !important;
+}
+
+#pdfTemplate h1,
+#pdfTemplate #pdfCompanyName {
+    font-size: 16px !important;
+}
+
+#pdfTemplate h2,
+#pdfTemplate #pdfTripName {
+    font-size: 20px !important; /* Strictly enforces 20px maximum heading size */
+}
+
+#pdfTemplate h3 {
+    font-size: 13px !important;
+}
+
+#pdfTemplate h4,
+#pdfTemplate h5 {
+    font-size: 12px !important;
+}
+
+#pdfTemplate p,
+#pdfTemplate span,
+#pdfTemplate td,
+#pdfTemplate th,
+#pdfTemplate div {
+    font-size: 11px; /* Proportional scaling down for content */
+}
+
+#pdfTemplate .pdf-summary-card .fw-bold {
+    font-size: 14px !important;
+}
+
+#pdfTemplate .pdf-summary-card .text-uppercase {
+    font-size: 8px !important;
+}
+
+#pdfTemplate .pdf-summary-card #pdfVehicle,
+#pdfTemplate .pdf-summary-card #pdfMealPlan {
+    font-size: 11px !important;
+}
+
+#pdfTemplate .day-icon {
+    width: 24px !important;
+    height: 24px !important;
+    font-size: 11px !important;
+}
+
+#pdfTemplate #pdfInclusions ul li,
+#pdfTemplate #pdfExclusions ul li {
+    font-size: 11px !important;
+    margin-bottom: 8px !important;
+    padding-left: 20px !important;
+}
+
+#pdfTemplate #pdfInclusions ul li::before,
+#pdfTemplate #pdfExclusions ul li::before {
+    font-size: 12px !important;
+    top: 2px !important;
+}
+
+/* Intelligent A4 Vector Page-Breaks & Gap Minimization */
+#pdfTemplate .card,
+#pdfTemplate .pdf-day-item,
+#pdfTemplate .advisory-card,
+#pdfTemplate .policy-card,
+#pdfTemplate .pdf-footer {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+}
+
+#pdfTemplate .p-4.p-xl-5 {
+    padding: 1.5rem !important; /* Premium tight margins for A4 pages to avoid gaps */
+}
