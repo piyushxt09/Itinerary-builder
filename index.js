@@ -17,24 +17,69 @@ function generateId() {
     return 'itin_' + Date.now();
 }
 
-function formatCurrency(value) {
+function getInputValue(id, fallback = '') {
+    const element = document.getElementById(id);
+    return element ? element.value : fallback;
+}
+
+const CURRENCY_FORMATS = {
+    USD: { symbol: '$', locale: 'en-US' },
+    INR: { symbol: '₹', locale: 'en-IN' },
+    EUR: { symbol: '€', locale: 'de-DE' },
+    AUD: { symbol: 'A$', locale: 'en-AU' }
+};
+
+function formatCurrency(value, currency = 'INR') {
     const amount = Number.parseFloat(value);
-    return Number.isFinite(amount)
-        ? `INR ${amount.toLocaleString('en-IN')}`
-        : 'INR 0';
+    const config = CURRENCY_FORMATS[currency] || CURRENCY_FORMATS.INR;
+    if (!Number.isFinite(amount)) {
+        return `${config.symbol}0.00`;
+    }
+    return `${config.symbol}${amount.toLocaleString(config.locale, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    })}`;
+}
+
+function getCurrencySymbol(currency = 'INR') {
+    return (CURRENCY_FORMATS[currency] || CURRENCY_FORMATS.INR).symbol;
 }
 
 function formatDateRange(startDate, endDate) {
-    if (!startDate || !endDate) return 'Dates not set';
+    if (!startDate || !endDate) return 'Schedule on request';
 
     const start = new Date(startDate);
     const end = new Date(endDate);
 
     if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-        return 'Dates not set';
+        return 'Schedule on request';
     }
 
     return `${start.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })} - ${end.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}`;
+}
+
+function getTravelerSummary(data) {
+    const adults = Number(data.adultCount) || Number(data.travelers) || 0;
+    const children = Number(data.childCount) || 0;
+    const fallbackTravelers = Number(data.travelers) || 0;
+    let summary = '';
+
+    if (adults > 0) {
+        summary = `${adults} Adult${adults === 1 ? '' : 's'}`;
+    } else if (fallbackTravelers > 0) {
+        summary = `${fallbackTravelers} Traveler${fallbackTravelers === 1 ? '' : 's'}`;
+    } else {
+        summary = 'Travelers not set';
+    }
+
+    if (children > 0) {
+        summary += `, ${children} Child${children === 1 ? '' : 'ren'}`;
+        if (data.childAges) {
+            summary += ` (ages: ${data.childAges})`;
+        }
+    }
+   
+    return summary;
 }
 
 function parseToListItems(htmlOrText) {
@@ -134,10 +179,18 @@ function addHotel(data = {}) {
                     <input type="text" class="form-control hotel-name" placeholder="Hotel Name" value="${data.name || ''}" required>
                 </div>
                 <div class="col-md-3">
+                    <label class="form-label small fw-bold text-muted">Check-in Date</label>
+                    <input type="date" class="form-control hotel-checkin" value="${data.checkIn || ''}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold text-muted">Check-out Date</label>
+                    <input type="date" class="form-control hotel-checkout" value="${data.checkOut || ''}">
+                </div>
+                <div class="col-md-3">
                     <label class="form-label small fw-bold text-muted">Nights</label>
                     <input type="number" class="form-control hotel-nights" min="1" value="${data.nights || 1}">
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-9">
                     <label class="form-label small fw-bold text-muted">Room Category</label>
                     <select class="form-select hotel-room">
                         <option value="Standard" ${data.room === 'Standard' ? 'selected' : ''}>Standard</option>
@@ -246,22 +299,27 @@ function collectFormData() {
         id: currentItineraryId || generateId(),
         // Company Data
         companyLogo: companyLogoBase64,
-        companyName: document.getElementById('companyName').value,
-        companyEmail: document.getElementById('companyEmail').value,
-        companyWebsite: document.getElementById('companyWebsite').value,
-        companyPhone: document.getElementById('companyPhone').value,
+        companyName: getInputValue('companyName'),
+        companyEmail: getInputValue('companyEmail'),
+        companyWebsite: getInputValue('companyWebsite'),
+        companyPhone: getInputValue('companyPhone'),
         // Trip Data
-        tripName: document.getElementById('tripName').value,
-        destination: document.getElementById('destination').value,
-        startDate: document.getElementById('startDate').value,
-        endDate: document.getElementById('endDate').value,
-        totalCost: document.getElementById('totalCost').value,
-        travelers: document.getElementById('travelers').value,
-        rooms: document.getElementById('rooms').value,
-        vehicle: document.getElementById('vehicle').value,
-        pickup: document.getElementById('pickup').value,
-        dropoff: document.getElementById('dropoff').value,
-        mealPlan: document.getElementById('mealPlan').value,
+        tripName: getInputValue('tripName'),
+        destination: getInputValue('destination'),
+        startDate: getInputValue('startDate'),
+        endDate: getInputValue('endDate'),
+        totalCost: getInputValue('totalCost'),
+        currencyCode: getInputValue('currencyCode', 'USD') || 'USD',
+        travelers: getInputValue('travelers'),
+        adultCount: getInputValue('adultCount'),
+        adultNames: getInputValue('adultNames'),
+        childCount: getInputValue('childCount'),
+        childAges: getInputValue('childAges'),
+        rooms: getInputValue('rooms'),
+        vehicle: getInputValue('vehicle'),
+        pickup: getInputValue('pickup'),
+        dropoff: getInputValue('dropoff'),
+        mealPlan: getInputValue('mealPlan'),
 
         inclusions: quillInstances['inclusions'].root.innerHTML,
         exclusions: quillInstances['exclusions'].root.innerHTML,
@@ -277,6 +335,8 @@ function collectFormData() {
     document.querySelectorAll('.hotel-card').forEach(card => {
         itinerary.hotels.push({
             name: card.querySelector('.hotel-name').value,
+            checkIn: card.querySelector('.hotel-checkin').value,
+            checkOut: card.querySelector('.hotel-checkout').value,
             nights: card.querySelector('.hotel-nights').value,
             room: card.querySelector('.hotel-room').value
         });
@@ -315,6 +375,9 @@ async function exportToPDF(itineraryData) {
         Swal.fire('Error', 'No data to export', 'error');
         return;
     }
+
+    const hotels = Array.isArray(itineraryData.hotels) ? itineraryData.hotels : [];
+    const days = Array.isArray(itineraryData.days) ? itineraryData.days : [];
 
     const wrapper = document.getElementById('pdfTemplateWrapper');
     const template = document.getElementById('pdfTemplate');
@@ -389,12 +452,12 @@ async function exportToPDF(itineraryData) {
     // Trip Info
     const tripNameEl = document.getElementById('pdfTripName');
     if (tripNameEl) {
-        tripNameEl.innerText = itineraryData.tripName.toUpperCase();
+        tripNameEl.innerText = (itineraryData.tripName || 'Travel Proposal').toUpperCase();
     }
 
     const destinationEl = document.getElementById('pdfDestination');
     if (destinationEl) {
-        destinationEl.innerText = itineraryData.destination;
+        destinationEl.innerText = itineraryData.destination || 'Destination not set';
     }
 
     const datesEl = document.getElementById('pdfDates');
@@ -404,12 +467,12 @@ async function exportToPDF(itineraryData) {
 
     const costEl = document.getElementById('pdfCost');
     if (costEl) {
-        costEl.innerText = `${formatCurrency(itineraryData.totalCost)}/-`;
+        costEl.innerText = `${formatCurrency (itineraryData.totalCost, itineraryData.currencyCode)}`;
     }
 
     const travelersEl = document.getElementById('pdfTravelers');
     if (travelersEl) {
-        travelersEl.innerText = `${itineraryData.travelers} Traveler(s)`;
+        travelersEl.innerText = getTravelerSummary(itineraryData);
     }
 
     const vehicleEl = document.getElementById('pdfVehicle');
@@ -425,12 +488,15 @@ async function exportToPDF(itineraryData) {
     // Hotels Table
     const hotelsList = document.getElementById('pdfHotelsList');
     if (hotelsList) {
-        if (itineraryData.hotels.length > 0) {
-            hotelsList.innerHTML = itineraryData.hotels.map(h => `
-                <tr style="border-bottom: 1px solid #eee;">
-                    <td style="padding: 10px 12px; font-weight: 600; color: #16324f; font-size: 11px;">${h.name}</td>
-                    <td style="padding: 10px 12px; color: #666; font-size: 11px;">${h.nights} Nights</td>
-                    <td style="padding: 10px 12px; color: #666; font-size: 11px;">${h.room}</td>
+        if (hotels.length > 0) {
+            hotelsList.innerHTML = hotels.map(h => `
+                <tr style="border-bottom: 2px solid #6a6a6a !important; border-color: #666;">
+                    <td style="padding: 10px 12px; font-weight: 600; color: #16324f; font-size: 11px; border-color: #666;">
+                        ${h.name}
+                        ${h.checkIn && h.checkOut ? `<div style="font-size: 10px; color: #777; margin-top: 4px; border-color: #666;">${formatDateRange(h.checkIn, h.checkOut)}</div>` : ''}
+                    </td>
+                    <td style="padding: 10px 12px; color: #666; font-size: 11px; border-color: #666;">${h.nights} Nights</td>
+                    <td style="padding: 10px 12px; color: #666; font-size: 11px; border-color: #666;">${h.room}</td>
                 </tr>
             `).join('');
         } else {
@@ -441,7 +507,7 @@ async function exportToPDF(itineraryData) {
     // Days with Adventure Timeline
     const daysList = document.getElementById('pdfDaysList');
     if (daysList) {
-        daysList.innerHTML = itineraryData.days.map((d, index) => `
+        daysList.innerHTML = days.length > 0 ? days.map((d, index) => `
             <div class="pdf-day-item" style="margin-bottom: 14px; border-left: 2px solid #1b4332; padding-left: 18px; position: relative;">
                 <div style="position: absolute; left: -13px; top: 0; width: 24px; height: 24px; background: #d97706; border-radius: 50%; color: white; text-align: center; font-size: 11px; line-height: 24px; font-weight: 800; box-shadow: 0 2px 5px rgba(217,119,6,0.2); z-index: 2; border: 2.5px solid white;">
                     ${index + 1}
@@ -453,7 +519,7 @@ async function exportToPDF(itineraryData) {
                     ${d.description}
                 </div>
             </div>
-        `).join('');
+        `).join('') : '<p class="text-muted small">No day activities specified.</p>';
     }
 
     // Quill Contents
@@ -572,7 +638,12 @@ function renderItinerariesList() {
         const haystack = [
             it.tripName,
             it.destination,
-            it.companyName
+            it.companyName,
+            it.adultNames,
+            it.pickup,
+            it.dropoff,
+            it.vehicle,
+            it.mealPlan
         ].join(' ').toLowerCase();
 
         return haystack.includes(itinerarySearchTerm);
@@ -612,12 +683,21 @@ function renderItinerariesList() {
                     <div class="itinerary-meta">
                         <div class="itinerary-name">${it.tripName}</div>
                         <div class="small text-muted itinerary-company">${it.companyName || 'No Company'}</div>
+                        <div class="small text-muted">${it.createdAt ? `Saved ${new Date(it.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}` : 'Recently saved'}</div>
                     </div>
                 </div>
             </td>
-            <td>${it.destination}</td>
-            <td>${formatDateRange(it.startDate, it.endDate)}</td>
-            <td>${formatCurrency(it.totalCost)}</td>
+            <td>${it.destination || 'Destination not set'}</td>
+            <td>
+                <div class="fw-semibold">${getTravelerSummary(it)}</div>
+                <div class="small text-muted">${Number(it.rooms) > 0 ? `${it.rooms} Room${Number(it.rooms) === 1 ? '' : 's'}` : 'Room details not set'}</div>
+            </td>
+            <td>
+                <div class="fw-semibold">${it.vehicle || 'Vehicle not set'}</div>
+                <div class="small text-muted">${it.mealPlan || 'Meal plan not set'}</div>
+                <div class="small text-muted">${[it.pickup, it.dropoff].filter(Boolean).join(' to ') || 'Pickup/drop-off not set'}</div>
+            </td>
+            <td>${formatCurrency(it.totalCost, it.currencyCode || 'USD')}</td>
             <td class="text-center">
                 <div class="btn-group shadow-sm rounded action-btn-group">
                     <button class="btn btn-sm btn-primary" onclick="generatePDFById('${it.id}')" title="Download PDF">
@@ -637,17 +717,21 @@ function renderItinerariesList() {
 
 function updateOverviewStats(itineraries) {
     const countEl = document.getElementById('totalItinerariesCount');
-    const destinationEl = document.getElementById('totalDestinationsCount');
+    const travelerEl = document.getElementById('totalTravelersCount');
     const valueEl = document.getElementById('totalValueCount');
 
-    if (!countEl || !destinationEl || !valueEl) return;
+    if (!countEl || !travelerEl || !valueEl) return;
 
-    const uniqueDestinations = new Set(
-        itineraries
-            .map((it) => (it.destination || '').trim())
-            .filter(Boolean)
-            .map((destination) => destination.toLowerCase())
-    );
+    const totalTravelers = itineraries.reduce((sum, it) => {
+        const travelerCount = Number(it.travelers);
+        if (Number.isFinite(travelerCount) && travelerCount > 0) {
+            return sum + travelerCount;
+        }
+
+        const adults = Number(it.adultCount) || 0;
+        const children = Number(it.childCount) || 0;
+        return sum + adults + children;
+    }, 0);
 
     const totalValue = itineraries.reduce((sum, it) => {
         const amount = Number.parseFloat(it.totalCost);
@@ -655,7 +739,7 @@ function updateOverviewStats(itineraries) {
     }, 0);
 
     countEl.textContent = itineraries.length;
-    destinationEl.textContent = uniqueDestinations.size;
+    travelerEl.textContent = totalTravelers;
     valueEl.textContent = formatCurrency(totalValue);
 }
 
@@ -748,17 +832,22 @@ function loadEditData() {
     document.getElementById('companyPhone').value = it.companyPhone || '';
 
     // Basic Fields
-    document.getElementById('tripName').value = it.tripName;
-    document.getElementById('destination').value = it.destination;
-    document.getElementById('startDate').value = it.startDate;
-    document.getElementById('endDate').value = it.endDate;
-    document.getElementById('totalCost').value = it.totalCost;
-    document.getElementById('travelers').value = it.travelers;
-    document.getElementById('rooms').value = it.rooms;
-    document.getElementById('vehicle').value = it.vehicle;
-    document.getElementById('pickup').value = it.pickup;
-    document.getElementById('dropoff').value = it.dropoff;
-    document.getElementById('mealPlan').value = it.mealPlan;
+    if (document.getElementById('tripName')) document.getElementById('tripName').value = it.tripName || '';
+    if (document.getElementById('destination')) document.getElementById('destination').value = it.destination || '';
+    if (document.getElementById('startDate')) document.getElementById('startDate').value = it.startDate || '';
+    if (document.getElementById('endDate')) document.getElementById('endDate').value = it.endDate || '';
+    if (document.getElementById('totalCost')) document.getElementById('totalCost').value = it.totalCost || '';
+    if (document.getElementById('currencyCode')) document.getElementById('currencyCode').value = it.currencyCode || 'USD';
+    if (document.getElementById('travelers')) document.getElementById('travelers').value = it.travelers || '';
+    if (document.getElementById('adultCount')) document.getElementById('adultCount').value = it.adultCount || 0;
+    if (document.getElementById('adultNames')) document.getElementById('adultNames').value = it.adultNames || '';
+    if (document.getElementById('childCount')) document.getElementById('childCount').value = it.childCount || 0;
+    if (document.getElementById('childAges')) document.getElementById('childAges').value = it.childAges || '';
+    if (document.getElementById('rooms')) document.getElementById('rooms').value = it.rooms || '';
+    if (document.getElementById('vehicle')) document.getElementById('vehicle').value = it.vehicle || '';
+    if (document.getElementById('pickup')) document.getElementById('pickup').value = it.pickup || '';
+    if (document.getElementById('dropoff')) document.getElementById('dropoff').value = it.dropoff || '';
+    if (document.getElementById('mealPlan')) document.getElementById('mealPlan').value = it.mealPlan || '';
 
     quillInstances['inclusions'].root.innerHTML = it.inclusions || '';
     quillInstances['exclusions'].root.innerHTML = it.exclusions || '';
@@ -766,9 +855,9 @@ function loadEditData() {
     quillInstances['cancellationPolicy'].root.innerHTML = it.cancellationPolicy || '';
 
     // Hotels
-    it.hotels.forEach(h => addHotel(h));
+    (Array.isArray(it.hotels) ? it.hotels : []).forEach(h => addHotel(h));
     // Days
-    it.days.forEach(d => addDay(d));
+    (Array.isArray(it.days) ? it.days : []).forEach(d => addDay(d));
 
     // Initial preview render
     updatePreview();
@@ -837,12 +926,18 @@ function updatePreview() {
 
     const costEl = document.getElementById('pdfCost');
     if (costEl) {
-        costEl.innerText = data.totalCost ? `${formatCurrency(data.totalCost)}/-` : 'INR 0';
+        costEl.innerText = data.totalCost ? `${formatCurrency(data.totalCost, data.currencyCode)} ` : formatCurrency(0, data.currencyCode || 'USD');
+    }
+
+
+    const currencySymbolEl = document.getElementById('currencySymbol');
+    if (currencySymbolEl) {
+        currencySymbolEl.innerText = getCurrencySymbol(data.currencyCode || 'USD');
     }
 
     const travelersEl = document.getElementById('pdfTravelers');
     if (travelersEl) {
-        travelersEl.innerText = `${data.travelers || 2} Traveler(s)`;
+        travelersEl.innerText = getTravelerSummary(data);
     }
 
     const vehicleEl = document.getElementById('pdfVehicle');
@@ -861,7 +956,10 @@ function updatePreview() {
         if (data.hotels && data.hotels.length > 0) {
             hotelsList.innerHTML = data.hotels.map(h => `
                 <tr style="border-bottom: 1px solid #eee;">
-                    <td style="padding: 10px 12px; font-weight: 600; color: #16324f; font-size: 11px;">${h.name || 'Hotel Name'}</td>
+                    <td style="padding: 10px 12px; font-weight: 600; color: #16324f; font-size: 11px;">
+                        ${h.name || 'Hotel Name'}
+                        ${h.checkIn && h.checkOut ? `<div style="font-size: 10px; color: #777; margin-top: 4px;">${formatDateRange(h.checkIn, h.checkOut)}</div>` : ''}
+                    </td>
                     <td style="padding: 10px 12px; color: #666; font-size: 11px;">${h.nights || 1} Nights</td>
                     <td style="padding: 10px 12px; color: #666; font-size: 11px;">${h.room || 'Standard'}</td>
                 </tr>
@@ -925,7 +1023,8 @@ function setupBinding() {
     const inputs = [
         'companyName', 'companyEmail', 'companyWebsite', 'companyPhone',
         'tripName', 'destination', 'startDate', 'endDate', 'totalCost',
-        'travelers', 'rooms', 'vehicle', 'pickup', 'dropoff', 'mealPlan'
+        'currencyCode', 'travelers', 'adultCount', 'adultNames', 'childCount', 'childAges',
+        'rooms', 'vehicle', 'pickup', 'dropoff', 'mealPlan'
     ];
 
     inputs.forEach(id => {

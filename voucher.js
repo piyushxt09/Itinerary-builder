@@ -3,6 +3,8 @@ let agencyLogoBase64 = null;
 let currentEditingVoucherId = null;
 let currentVoucherLabel = "";
 
+const DEFAULT_LOGO_URL = "https://adminapi.flyeasygo.com/assets-files/8e17aad2-9df5-4e81-a841-7551a0b03ddb.png";
+
 // Default Data requested by the USER
 const defaultVoucherData = {
     agencyName: "flyeasygo PVT LTD",
@@ -16,11 +18,13 @@ const defaultVoucherData = {
     nights: "03",
     status: "CONFIRMED",
     checkIn: "03 Jun 2026",
+    checkOut: "06 Jun 2026",
     roomRows: [
         { room: "Room 1", pax: "2 Adults (Ms. Nisha Gogia)", type: "Deluxe Balcony", meal: "Breakfast" },
         { room: "Room 2", pax: "2 Adults (Mr. Shalleen Puri)", type: "Deluxe Balcony", meal: "Breakfast" }
     ],
     rooms: "2",
+    guests: "4",
     cancellationPolicy: "Booking is Non Refundable.",
     terms: [
         "You must present a photo ID at the time of check in. Hotel may ask for credit card or cash deposit for the extra services at the time of check in.",
@@ -35,20 +39,28 @@ const defaultVoucherData = {
     ]
 };
 
-// Initialize
 document.addEventListener('DOMContentLoaded', () => {
-    // Check if we are loading an edit target from the saved history page
+    const urlParams = new URLSearchParams(window.location.search);
     const editTarget = localStorage.getItem('hotel_voucher_edit_target');
+
     if (editTarget) {
         try {
             const parsedTarget = JSON.parse(editTarget);
+            console.log("Edit target found:", parsedTarget);
+            
+            // Set session identifiers
             currentEditingVoucherId = parsedTarget.id || null;
             currentVoucherLabel = parsedTarget.label || "";
+            
+            // Populate form
             loadVoucherData(parsedTarget);
+            
+            // Persist as current draft immediately
             saveToLocalStorage();
-            localStorage.removeItem('hotel_voucher_edit_target'); // Clear edit target token
+            
+            // Clear the trigger
+            localStorage.removeItem('hotel_voucher_edit_target');
 
-            // Show custom toast notification
             Swal.fire({
                 title: 'Editing Voucher',
                 text: `Loaded saved voucher: "${currentVoucherLabel}"`,
@@ -58,11 +70,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 showConfirmButton: false,
                 timer: 3000
             });
-        } catch (e) {
-            console.error("Error loading edit target", e);
+        } catch (error) {
+            console.error("Error loading edit target", error);
+            loadFreshDefaultVoucher();
         }
+    } else if (urlParams.get('new') === '1') {
+        loadFreshDefaultVoucher();
+        window.history.replaceState({}, document.title, 'hotel-voucher.html');
     } else {
-        // Normal load: Check if we have saved details in localStorage, otherwise load defaults
         const savedData = localStorage.getItem('hotel_voucher_current');
         if (savedData) {
             try {
@@ -70,29 +85,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentEditingVoucherId = parsedData.id || null;
                 currentVoucherLabel = parsedData.label || "";
                 loadVoucherData(parsedData);
-            } catch (e) {
-                console.error("Error parsing saved voucher data", e);
-                resetToDefaults();
+            } catch (error) {
+                console.error("Error parsing saved voucher data", error);
+                loadFreshDefaultVoucher();
             }
         } else {
-            resetToDefaults();
+            loadFreshDefaultVoucher();
         }
     }
 
-    // Set up real-time binding
     setupBinding();
 
-    // Event listener for PDF Export
     document.getElementById('generatePDFBtn').addEventListener('click', exportVoucherToPDF);
     document.getElementById('quickDownloadPDF').addEventListener('click', exportVoucherToPDF);
-
-    // Event listener for Saving to History
     document.getElementById('saveVoucherBtn').addEventListener('click', saveVoucherToHistory);
+    document.getElementById('newVoucherBtn').addEventListener('click', () => startNewVoucher(false));
 });
 
-// Load voucher object into Form and Preview
 function loadVoucherData(data) {
-    // Form Inputs
     document.getElementById('inputAgencyName').value = data.agencyName || "";
     document.getElementById('inputAgencyEmail').value = data.agencyEmail || "";
     document.getElementById('inputAgencyPhone').value = data.agencyPhone || "";
@@ -106,72 +116,35 @@ function loadVoucherData(data) {
     document.getElementById('inputCheckIn').value = data.checkIn || "";
     document.getElementById('inputCheckOut').value = data.checkOut || "";
     document.getElementById('inputRooms').value = data.rooms || "";
+    document.getElementById('inputGuests').value = data.guests || "";
     document.getElementById('inputCancellationPolicy').value = data.cancellationPolicy || "";
 
-    // Clear and load room rows
     const container = document.getElementById('roomRowsContainer');
     if (container) {
         container.innerHTML = '';
-        const rowsToLoad = data.roomRows || defaultVoucherData.roomRows;
+        const rowsToLoad = Array.isArray(data.roomRows) && data.roomRows.length > 0
+            ? data.roomRows
+            : defaultVoucherData.roomRows;
         rowsToLoad.forEach(row => addRoomRow(row));
     }
 
-    // Terms & Conditions (Join with newlines)
     if (Array.isArray(data.terms)) {
         document.getElementById('inputTerms').value = data.terms.join('\n');
+    } else if (typeof data.terms === 'string') {
+        document.getElementById('inputTerms').value = data.terms;
     } else {
-        document.getElementById('inputTerms').value = data.terms || "";
+        document.getElementById('inputTerms').value = (defaultVoucherData.terms || []).join('\n');
     }
 
-    // Custom Logo Base64 check
-    if (data.agencyLogo) {
-        agencyLogoBase64 = data.agencyLogo;
-        document.getElementById('viewAgencyLogo').src = data.agencyLogo;
-    }
+    agencyLogoBase64 = data.agencyLogo || null;
+    document.getElementById('viewAgencyLogo').src = agencyLogoBase64 || DEFAULT_LOGO_URL;
 
-    // Update Live Preview
     updateLivePreview();
 }
 
-// Reset to Default Revanta Details
-function resetToDefaults() {
-    Swal.fire({
-        title: 'Load Default Data?',
-        text: 'This will fill the fields with the "Best Western Plus Revanta" hotel voucher details.',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, load defaults'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            agencyLogoBase64 = null;
-            currentEditingVoucherId = null;
-            currentVoucherLabel = "";
-            document.getElementById('viewAgencyLogo').src = "https://adminapi.flyeasygo.com/assets-files/8e17aad2-9df5-4e81-a841-7551a0b03ddb.png";
-            loadVoucherData(defaultVoucherData);
-            saveToLocalStorage();
-            Swal.fire('Loaded!', 'Voucher details have been populated.', 'success');
-        }
-    });
-}
-
-// Custom Logo File Loader
-function loadCustomLogo(input) {
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            agencyLogoBase64 = e.target.result;
-            document.getElementById('viewAgencyLogo').src = e.target.result;
-            saveToLocalStorage();
-        }
-        reader.readAsDataURL(input.files[0]);
-    }
-}
-
-// Save inputs to LocalStorage
-function saveToLocalStorage() {
-    const currentData = {
+function getVoucherFormData(overrides = {}) {
+    return {
+        ...overrides,
         id: currentEditingVoucherId,
         label: currentVoucherLabel,
         agencyName: document.getElementById('inputAgencyName').value,
@@ -188,17 +161,94 @@ function saveToLocalStorage() {
         checkOut: document.getElementById('inputCheckOut').value,
         roomRows: getRoomRowsData(),
         rooms: document.getElementById('inputRooms').value,
+        guests: document.getElementById('inputGuests').value,
         cancellationPolicy: document.getElementById('inputCancellationPolicy').value,
         terms: document.getElementById('inputTerms').value.split('\n').filter(line => line.trim() !== ""),
         agencyLogo: agencyLogoBase64
     };
+
+}
+
+function loadFreshDefaultVoucher() {
+    agencyLogoBase64 = null;
+    currentEditingVoucherId = null;
+    currentVoucherLabel = "";
+    localStorage.removeItem('hotel_voucher_edit_target');
+    localStorage.removeItem('hotel_voucher_current');
+
+    const logoInput = document.getElementById('inputAgencyLogo');
+    if (logoInput) {
+        logoInput.value = '';
+    }
+
+    document.getElementById('viewAgencyLogo').src = DEFAULT_LOGO_URL;
+    loadVoucherData(defaultVoucherData);
+    saveToLocalStorage();
+}
+
+function startNewVoucher(skipConfirm = false) {
+    if (skipConfirm) {
+        loadFreshDefaultVoucher();
+        return;
+    }
+
+    Swal.fire({
+        title: 'Start New Voucher?',
+        text: 'This will open a fresh voucher draft with default details.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, start new'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            loadFreshDefaultVoucher();
+            Swal.fire('Ready!', 'A fresh voucher draft is ready.', 'success');
+        }
+    });
+}
+
+function resetToDefaults() {
+    Swal.fire({
+        title: 'Load Default Data?',
+        text: 'This will fill the fields with the "Best Western Plus Revanta" hotel voucher details.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, load defaults'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            loadFreshDefaultVoucher();
+            Swal.fire('Loaded!', 'Voucher details have been populated.', 'success');
+        }
+    });
+}
+
+function loadCustomLogo(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function (event) {
+            agencyLogoBase64 = event.target.result;
+            document.getElementById('viewAgencyLogo').src = event.target.result;
+            saveToLocalStorage();
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function saveToLocalStorage() {
+    const currentData = getVoucherFormData({
+        id: currentEditingVoucherId,
+        label: currentVoucherLabel
+    });
     localStorage.setItem('hotel_voucher_current', JSON.stringify(currentData));
 }
 
-// Helper functions for dynamic room rows
 function addRoomRow(roomData = null) {
     const container = document.getElementById('roomRowsContainer');
     if (!container) return;
+
     const index = container.children.length + 1;
     const data = roomData || { room: `Room ${index}`, pax: '', type: '', meal: '' };
 
@@ -207,19 +257,19 @@ function addRoomRow(roomData = null) {
     row.innerHTML = `
         <div class="col-md-2">
             <label class="form-label small fw-bold">Room</label>
-            <input type="text" class="form-control form-control-sm room-input-label" value="${data.room}">
+            <input type="text" class="form-control form-control-sm room-input-label" value="${data.room || `Room ${index}`}">
         </div>
         <div class="col-md-4">
             <label class="form-label small fw-bold">Passenger Name(s)</label>
-            <input type="text" class="form-control form-control-sm room-input-pax" placeholder="e.g. Mr. John Doe" value="${data.pax}">
+            <input type="text" class="form-control form-control-sm room-input-pax" placeholder="e.g. Mr. John Doe" value="${data.pax || ''}">
         </div>
         <div class="col-md-3">
             <label class="form-label small fw-bold">Room Type</label>
-            <input type="text" class="form-control form-control-sm room-input-type" placeholder="e.g. Deluxe" value="${data.type}">
+            <input type="text" class="form-control form-control-sm room-input-type" placeholder="e.g. Deluxe" value="${data.type || ''}">
         </div>
         <div class="col-md-2">
             <label class="form-label small fw-bold">Meal Type</label>
-            <input type="text" class="form-control form-control-sm room-input-meal" placeholder="e.g. Breakfast" value="${data.meal}">
+            <input type="text" class="form-control form-control-sm room-input-meal" placeholder="e.g. Breakfast" value="${data.meal || ''}">
         </div>
         <div class="col-md-1 d-flex align-items-end">
             <button type="button" class="btn btn-outline-danger btn-sm w-100" onclick="removeRoomRow(this)"><i class="fas fa-trash"></i></button>
@@ -227,9 +277,12 @@ function addRoomRow(roomData = null) {
     `;
     container.appendChild(row);
 
-    // Attach event listeners to new inputs for live preview
     row.querySelectorAll('input').forEach(input => {
         input.addEventListener('input', () => {
+            updateLivePreview();
+            saveToLocalStorage();
+        });
+        input.addEventListener('change', () => {
             updateLivePreview();
             saveToLocalStorage();
         });
@@ -248,6 +301,7 @@ function removeRoomRow(btn) {
 function getRoomRowsData() {
     const rows = document.querySelectorAll('.room-row');
     const data = [];
+
     rows.forEach(row => {
         data.push({
             room: row.querySelector('.room-input-label').value,
@@ -256,16 +310,16 @@ function getRoomRowsData() {
             meal: row.querySelector('.room-input-meal').value
         });
     });
+
     return data;
 }
 
-// Setup inputs change monitoring
 function setupBinding() {
     const inputs = [
         'inputAgencyName', 'inputAgencyEmail', 'inputAgencyPhone', 'inputAgencyWebsite',
         'inputHotelName', 'inputHotelAddress', 'inputHotelPhone', 'inputConfirmation',
         'inputNights', 'inputStatus', 'inputCheckIn', 'inputCheckOut',
-        'inputRooms', 'inputCancellationPolicy', 'inputTerms'
+        'inputRooms', 'inputGuests', 'inputCancellationPolicy', 'inputTerms'
     ];
 
     inputs.forEach(id => {
@@ -283,7 +337,6 @@ function setupBinding() {
     });
 }
 
-// Synchronize all values to high-fidelity live preview
 function updateLivePreview() {
     const agencyName = document.getElementById('inputAgencyName').value.trim() || "flyeasygo PVT LTD";
     const agencyEmail = document.getElementById('inputAgencyEmail').value.trim() || "bookings@flyeasygo.com";
@@ -297,10 +350,10 @@ function updateLivePreview() {
     const checkIn = document.getElementById('inputCheckIn').value.trim() || "N/A";
     const checkOut = document.getElementById('inputCheckOut').value.trim() || "N/A";
     const rooms = document.getElementById('inputRooms').value.trim() || "0";
+    const guests = document.getElementById('inputGuests').value.trim() || "0";
     const cancellationPolicy = document.getElementById('inputCancellationPolicy').value.trim() || "N/A";
     const termsRaw = document.getElementById('inputTerms').value;
 
-    // Set preview DOM
     document.getElementById('viewAgencyName').innerText = agencyName.toUpperCase();
     document.getElementById('viewFooterAgencyName').innerText = agencyName.toUpperCase();
     document.getElementById('viewAgencyEmail').innerText = agencyEmail;
@@ -312,7 +365,6 @@ function updateLivePreview() {
     document.getElementById('viewConfirmation').innerText = confirmation;
     document.getElementById('viewNights').innerText = nights.padStart(2, '0');
 
-    // Status color classes
     const viewStatus = document.getElementById('viewStatus');
     viewStatus.innerText = status;
     viewStatus.className = 'badge-status';
@@ -324,9 +376,10 @@ function updateLivePreview() {
 
     document.getElementById('viewCheckIn').innerText = checkIn;
     document.getElementById('viewCheckOut').innerText = checkOut;
+    document.getElementById('viewRooms').innerText = rooms;
+    document.getElementById('viewGuests').innerText = guests;
     document.getElementById('viewCancellationPolicy').innerText = cancellationPolicy;
 
-    // Populate Dynamic Room Pax Table
     const tableBody = document.getElementById('viewRoomPaxTable');
     if (tableBody) {
         tableBody.innerHTML = '';
@@ -347,14 +400,13 @@ function updateLivePreview() {
         }
     }
 
-    // Bulleted Terms
     const viewTerms = document.getElementById('viewTerms');
     viewTerms.innerHTML = "";
     const terms = termsRaw.split('\n').filter(line => line.trim() !== "");
     if (terms.length > 0) {
         terms.forEach(term => {
             const li = document.createElement('li');
-            li.innerText = term.replace(/^[\s•\-\*\✓\✕\+\.\d\)]+/, '').trim(); // strip bullets/numbers
+            li.innerText = term.replace(/^[\s\-*+.\d)]+/, '').trim();
             viewTerms.appendChild(li);
         });
     } else {
@@ -362,7 +414,6 @@ function updateLivePreview() {
     }
 }
 
-// Save Current Voucher details to the Saved History database in LocalStorage
 function saveVoucherToHistory() {
     const form = document.getElementById('voucherForm');
     if (!form.checkValidity()) {
@@ -373,12 +424,11 @@ function saveVoucherToHistory() {
     const roomRows = getRoomRowsData();
     const firstPax = (roomRows.length > 0 && roomRows[0].pax) ? roomRows[0].pax.substring(0, 30) : "Passenger";
     const hotelName = document.getElementById('inputHotelName').value.trim();
-    const defaultLabel = `${firstPax} — ${hotelName}`;
+    const defaultLabel = `${firstPax} - ${hotelName}`;
 
     const savedHistory = JSON.parse(localStorage.getItem('saved_hotel_vouchers') || '[]');
 
     if (currentEditingVoucherId) {
-        // Updating existing voucher
         const idx = savedHistory.findIndex(v => v.id === currentEditingVoucherId);
         if (idx !== -1) {
             Swal.fire({
@@ -391,28 +441,12 @@ function saveVoucherToHistory() {
                 confirmButtonText: 'Yes, update it!'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    const existingVoucher = savedHistory[idx];
-                    const updatedVoucher = {
-                        ...existingVoucher,
-                        updatedAt: new Date().toISOString(),
-                        agencyName: document.getElementById('inputAgencyName').value,
-                        agencyEmail: document.getElementById('inputAgencyEmail').value,
-                        agencyPhone: document.getElementById('inputAgencyPhone').value,
-                        agencyWebsite: document.getElementById('inputAgencyWebsite').value,
-                        hotelName: document.getElementById('inputHotelName').value,
-                        address: document.getElementById('inputHotelAddress').value,
-                        phone: document.getElementById('inputHotelPhone').value,
-                        confirmation: document.getElementById('inputConfirmation').value,
-                        nights: document.getElementById('inputNights').value,
-                        status: document.getElementById('inputStatus').value,
-                        checkIn: document.getElementById('inputCheckIn').value,
-                        checkOut: document.getElementById('inputCheckOut').value,
-                        roomRows: getRoomRowsData(),
-                        rooms: document.getElementById('inputRooms').value,
-                        cancellationPolicy: document.getElementById('inputCancellationPolicy').value,
-                        terms: document.getElementById('inputTerms').value.split('\n').filter(line => line.trim() !== ""),
-                        agencyLogo: agencyLogoBase64
-                    };
+                    const updatedVoucher = getVoucherFormData({
+                        ...savedHistory[idx],
+                        id: currentEditingVoucherId,
+                        label: currentVoucherLabel,
+                        updatedAt: new Date().toISOString()
+                    });
 
                     savedHistory[idx] = updatedVoucher;
                     localStorage.setItem('saved_hotel_vouchers', JSON.stringify(savedHistory));
@@ -431,7 +465,6 @@ function saveVoucherToHistory() {
         }
     }
 
-    // Creating new voucher - prompt user for a name/label reference
     Swal.fire({
         title: 'Save Hotel Voucher',
         text: 'Enter a Name for this Voucher:',
@@ -449,28 +482,11 @@ function saveVoucherToHistory() {
             const chosenLabel = result.value.trim();
             const newId = 'voucher_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
 
-            const newVoucher = {
+            const newVoucher = getVoucherFormData({
                 id: newId,
                 label: chosenLabel,
-                createdAt: new Date().toISOString(),
-                agencyName: document.getElementById('inputAgencyName').value,
-                agencyEmail: document.getElementById('inputAgencyEmail').value,
-                agencyPhone: document.getElementById('inputAgencyPhone').value,
-                agencyWebsite: document.getElementById('inputAgencyWebsite').value,
-                hotelName: document.getElementById('inputHotelName').value,
-                address: document.getElementById('inputHotelAddress').value,
-                phone: document.getElementById('inputHotelPhone').value,
-                confirmation: document.getElementById('inputConfirmation').value,
-                nights: document.getElementById('inputNights').value,
-                status: document.getElementById('inputStatus').value,
-                checkIn: document.getElementById('inputCheckIn').value,
-                checkOut: document.getElementById('inputCheckOut').value,
-                roomRows: getRoomRowsData(),
-                rooms: document.getElementById('inputRooms').value,
-                cancellationPolicy: document.getElementById('inputCancellationPolicy').value,
-                terms: document.getElementById('inputTerms').value.split('\n').filter(line => line.trim() !== ""),
-                agencyLogo: agencyLogoBase64
-            };
+                createdAt: new Date().toISOString()
+            });
 
             savedHistory.push(newVoucher);
             localStorage.setItem('saved_hotel_vouchers', JSON.stringify(savedHistory));
@@ -497,13 +513,11 @@ function saveVoucherToHistory() {
     });
 }
 
-// Generate PDF via html2pdf
 async function exportVoucherToPDF() {
     const template = document.getElementById('voucherPDFTemplate');
     const hotelName = document.getElementById('inputHotelName').value.trim() || "hotel";
     const confirmation = document.getElementById('inputConfirmation').value.trim() || "voucher";
 
-    // Show beautiful Swal loading overlay
     Swal.fire({
         title: 'Preparing Hotel Voucher PDF...',
         text: 'Generating beautiful, high-fidelity A4 document with IATA stamps. Please wait...',
@@ -514,13 +528,9 @@ async function exportVoucherToPDF() {
     });
 
     try {
-        // Wait for all fonts and images to load completely
         await document.fonts.ready;
-
-        // Wait briefly to ensure rendering completes
         await new Promise(resolve => setTimeout(resolve, 500));
 
-        // Options for html2pdf
         const opt = {
             margin: 0,
             filename: `${hotelName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_voucher_${confirmation}.pdf`,
@@ -536,7 +546,6 @@ async function exportVoucherToPDF() {
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
 
-        // Export the PDF
         await html2pdf().set(opt).from(template).save();
 
         Swal.fire({

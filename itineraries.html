@@ -76,7 +76,7 @@
         </div>
     </nav>
 
-    <section class="page-hero d-none">
+    <section class="page-hero">
         <div class="container">
             <div class="hero-panel hero-panel-compact">
                 <div>
@@ -93,14 +93,14 @@
     </section>
 
     <div class="container page-content">
-        <div class="overview-grid mb-4 d-none" aria-label="Saved itinerary summary">
+        <div class="overview-grid mb-4" aria-label="Saved itinerary summary">
             <div class="overview-card">
                 <span class="overview-label">Total Itineraries</span>
                 <strong class="overview-value" id="totalItinerariesCount">0</strong>
             </div>
             <div class="overview-card">
-                <span class="overview-label">Unique Destinations</span>
-                <strong class="overview-value" id="totalDestinationsCount">0</strong>
+                <span class="overview-label">Total Travelers</span>
+                <strong class="overview-value" id="totalTravelersCount">0</strong>
             </div>
             <div class="overview-card">
                 <span class="overview-label">Estimated Pipeline</span>
@@ -116,14 +116,14 @@
                         <div class="search-input-wrap">
                             <i class="fas fa-search search-input-icon"></i>
                             <input type="search" id="itinerarySearch" class="form-control search-input ps-5"
-                                placeholder="Search by trip name, company, or destination">
+                                placeholder="Search by trip, company, destination, traveler, or vehicle">
                         </div>
                     </div>
                     <div class="col-lg-5">
                         <div class="library-note">
                             <span class="library-note-label">Tip</span>
-                            <p class="mb-0">Use search to quickly find a client proposal, then edit, export, or delete
-                                it from the action menu.</p>
+                            <p class="mb-0">Search by traveler names, pickup details, or vehicle type to reopen the
+                                right proposal fast.</p>
                         </div>
                     </div>
                 </div>
@@ -138,7 +138,8 @@
                             <tr>
                                 <th class="ps-4">Trip Name</th>
                                 <th>Destination</th>
-                                <th>Dates</th>
+                                <th>Guests &amp; Stay</th>
+                                <th>Travel Plan</th>
                                 <th>Cost</th>
                                 <th class="text-center">Actions</th>
                             </tr>

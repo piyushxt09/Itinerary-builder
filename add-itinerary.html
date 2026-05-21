@@ -182,27 +182,45 @@
                                         <input type="text" class="form-control" id="destination"
                                             placeholder="e.g. Bali, Indonesia" required>
                                     </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label fw-semibold">Travel Dates <span
-                                                class="text-danger">*</span></label>
-                                        <div class="input-group">
-                                            <input type="date" class="form-control" id="startDate" required>
-                                            <span class="input-group-text bg-light">to</span>
-                                            <input type="date" class="form-control" id="endDate" required>
-                                        </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-semibold">Currency</label>
+                                        <select class="form-select" id="currencyCode">
+                                            <option value="USD">USD - US Dollar</option>
+                                            <option value="INR">INR - Indian Rupee</option>
+                                            <option value="EUR">EUR - Euro</option>
+                                            <option value="AUD">AUD - Australian Dollar</option>
+                                        </select>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-8">
                                         <label class="form-label fw-semibold">Total Package Cost <span
                                                 class="text-danger">*</span></label>
                                         <div class="input-group">
-                                            <span class="input-group-text">$</span>
+                                            <span class="input-group-text" id="currencySymbol">$</span>
                                             <input type="number" class="form-control" id="totalCost" placeholder="0.00"
                                                 required step="0.01">
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <label class="form-label fw-semibold">Number of Travelers</label>
                                         <input type="number" class="form-control" id="travelers" value="2" min="1">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-semibold">Number of Adults</label>
+                                        <input type="number" class="form-control" id="adultCount" value="2" min="1">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold">Adult Names</label>
+                                        <input type="text" class="form-control" id="adultNames"
+                                            placeholder="John Doe, Jane Doe">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-semibold">Number of Children</label>
+                                        <input type="number" class="form-control" id="childCount" value="0" min="0">
+                                    </div>
+                                    <div class="col-md-9">
+                                        <label class="form-label fw-semibold">Child Ages</label>
+                                        <input type="text" class="form-control" id="childAges"
+                                            placeholder="5, 8">
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label fw-semibold">Number of Rooms</label>
@@ -216,6 +234,18 @@
                                             <option value="Bus">Bus</option>
                                             <option value="Scooter">Scooter</option>
                                             <option value="Flight">Flight</option>
+                                            <option value="SIC">SIC</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-semibold">Meal Plan</label>
+                                        <select class="form-select" id="mealPlan">
+                                            <option value="All Inclusive">All Inclusive (Breakfast, Lunch, Dinner)
+                                            </option>
+                                            <option value="Breakfast Only">Breakfast Only</option>
+                                            <option value="Half Board">Half Board (Breakfast + Lunch/Dinner)</option>
+                                            <option value="Full Board">Full Board (All meals included)</option>
+                                            <option value="No Meals">No Meals</option>
                                         </select>
                                     </div>
                                     <div class="col-md-6">
@@ -227,17 +257,6 @@
                                         <label class="form-label fw-semibold">Drop-off Point</label>
                                         <input type="text" class="form-control" id="dropoff"
                                             placeholder="Airport, Station, or Hotel">
-                                    </div>
-                                    <div class="col-md-12">
-                                        <label class="form-label fw-semibold">Meal Plan</label>
-                                        <select class="form-select" id="mealPlan">
-                                            <option value="All Inclusive">All Inclusive (Breakfast, Lunch, Dinner)
-                                            </option>
-                                            <option value="Breakfast Only">Breakfast Only</option>
-                                            <option value="Half Board">Half Board (Breakfast + Lunch/Dinner)</option>
-                                            <option value="Full Board">Full Board (All meals included)</option>
-                                            <option value="No Meals">No Meals</option>
-                                        </select>
                                     </div>
                                 </div>
                             </div>
@@ -393,7 +412,7 @@
                                                     style="font-size: 8px;"><i
                                                         class="fas fa-tag accent-orange me-1"></i> Package Cost</div>
                                                 <div id="pdfCost" class="fw-bold text-dark mt-1"
-                                                    style="font-size: 14px;">$4,250</div>
+                                                    style="font-size: 14px;">$ 4,250</div>
                                                 <div class="text-muted" style="font-size: 8px;">per person</div>
                                             </div>
                                         </div>
@@ -405,7 +424,7 @@
                                                     style="font-size: 8px;"><i
                                                         class="fas fa-users accent-orange me-1"></i> Travelers</div>
                                                 <div id="pdfTravelers" class="fw-bold text-dark mt-1"
-                                                    style="font-size: 14px;">2 Adults
+                                                    style="font-size: 10px;">2 Adults
                                                 </div>
                                             </div>
                                         </div>

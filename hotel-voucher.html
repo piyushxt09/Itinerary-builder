@@ -297,9 +297,14 @@
                 <div class="editor-container p-4">
                     <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
                         <h4 class="fw-bold text-primary mb-0"><i class="fas fa-sliders-h me-2"></i>Voucher Details</h4>
-                        <button class="btn btn-outline-secondary btn-sm" onclick="resetToDefaults()">
-                            <i class="fas fa-undo me-1"></i> Load Default Revanta
-                        </button>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-primary btn-sm" type="button" id="newVoucherBtn">
+                                <i class="fas fa-plus me-1"></i> New Voucher
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="resetToDefaults()">
+                                <i class="fas fa-undo me-1"></i> Load Default Revanta
+                            </button>
+                        </div>
                     </div>
 
                     <form id="voucherForm">
@@ -402,9 +407,14 @@
                                             <option value="CANCELLED">CANCELLED</option>
                                         </select>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-3">
                                         <label class="form-label small fw-bold">No. Of Rooms</label>
                                         <input type="number" class="form-control form-control-sm" id="inputRooms"
+                                            min="1" required>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label small fw-bold">No. Of Guests</label>
+                                        <input type="number" class="form-control form-control-sm" id="inputGuests"
                                             min="1" required>
                                     </div>
                                 </div>
@@ -575,6 +585,23 @@
                                                 <div id="viewCheckOut" class="info-value">06 Jun 2026</div>
                                                 <div class="text-muted" style="font-size: 9px; margin-top: 2px;">Until
                                                     12:00 PM</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="voucher-section-title">
+                                        <i class="fas fa-bed"></i> Stay Summary
+                                    </div>
+                                    <div class="voucher-info-box h-100 mb-0">
+                                        <div class="row g-2">
+                                            <div class="col-6">
+                                                <div class="info-label">No. Of Rooms</div>
+                                                <div id="viewRooms" class="info-value">2</div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="info-label">No. Of Guests</div>
+                                                <div id="viewGuests" class="info-value">4</div>
                                             </div>
                                         </div>
                                     </div>
