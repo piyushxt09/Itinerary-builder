@@ -78,7 +78,7 @@ function getTravelerSummary(data) {
             summary += ` (ages: ${data.childAges})`;
         }
     }
-   
+
     return summary;
 }
 
@@ -141,6 +141,17 @@ function parseToListItems(htmlOrText) {
     }
 
     return lines;
+}
+
+// Helper to format dates for PDF
+function formatDate(dateStr) {
+    if (!dateStr) return 'TBA';
+    try {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+    } catch (e) {
+        return dateStr;
+    }
 }
 
 // Logo Preview and Conversion
@@ -369,15 +380,205 @@ function waitForImages(container) {
     return Promise.all(promises);
 }
 
+function generateFooter(data) {
+    return `
+        <div class="pdf-page-footer">
+            <div class="footer-info d-flex align-items-center gap-4">
+                <span><i class="fas fa-phone-alt me-2 fa-flip-horizontal" style="color: #be840d;"></i> ${data.companyPhone || '+91 98765 43210'}</span>
+                <span><i class="fas fa-globe me-2" style="color: #be840d;"></i> ${data.companyWebsite || 'www.luxuryexplorer.com'}</span>
+            </div>
+            <div class="footer-branding" style="font-weight: 700; letter-spacing: 1px; text-transform: uppercase;">
+                ${data.companyName || 'LUXURY EXPLORER'}
+            </div>
+        </div>
+    `;
+}
+
+function renderItineraryHTML(data) {
+    const hotels = Array.isArray(data.hotels) ? data.hotels : [];
+    const days = Array.isArray(data.days) ? data.days : [];
+    const inclusionsItems = parseToListItems(data.inclusions);
+    const exclusionsItems = parseToListItems(data.exclusions);
+    const printDate = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+    let html = '';
+
+    // IMPORTANT: Do NOT insert an empty dedicated page-break DIV between pages.
+    // html2pdf/html2canvas can treat it as an extra renderable node and may create
+    // blank pages.
+    const pageBreak = '';
+
+    // --- PAGE 1: FRONT PAGE (REDESIGNED) ---
+    html += `
+        <div class="pdf-page pdf-front-page">
+            <div class="pdf-page-content text-center">
+                <!-- Brand Header -->
+                <div class="pdf-front-logo-container">
+                    <img src="${data.companyLogo || 'https://adminapi.flyeasygo.com/assets-files/8e17aad2-9df5-4e81-a841-7551a0b03ddb.png'}" 
+                         class="pdf-front-logo">
+                    <div class="pdf-front-header-accent"></div>
+                </div>
+
+                <!-- Hero Title Section -->
+                <div class="mb-5">
+                    <h1 class="pdf-front-package-name">${data.tripName || 'Experience the Extraordinary'}</h1>
+                    <div class="pdf-front-destination">${data.destination || 'Global Discovery'}</div>
+                </div>
+
+                <!-- Sophisticated Highlight Grid -->
+                <div class="pdf-front-details">
+                    <div class="pdf-front-highlight-card">
+                        <div class="highlight-icon-box"><i class="fas fa-calendar-day"></i></div>
+                        <small class="highlight-label">Duration</small>
+                        <span class="highlight-value">${data.days?.length || 0} Days</span>
+                    </div>
+                    <div class="pdf-front-highlight-card">
+                        <div class="highlight-icon-box"><i class="fas fa-users"></i></div>
+                        <small class="highlight-label">Travelers</small>
+                        <span class="highlight-value">${getTravelerSummary(data)}</span>
+                    </div>
+                    <div class="pdf-front-highlight-card">
+                        <div class="highlight-icon-box"><i class="fas fa-bed"></i></div>
+                        <small class="highlight-label">Rooms</small>
+                        <span class="highlight-value">${data.rooms || 1} Room(s)</span>
+                    </div>
+                    <div class="pdf-front-highlight-card">
+                        <div class="highlight-icon-box"><i class="fas fa-car-side"></i></div>
+                        <small class="highlight-label">Vehicle</small>
+                        <span class="highlight-value">${data.vehicle || 'Private Car'}</span>
+                    </div>
+                    <div class="pdf-front-highlight-card">
+                        <div class="highlight-icon-box"><i class="fas fa-utensils"></i></div>
+                        <small class="highlight-label">Meal Plan</small>
+                        <span class="highlight-value">${data.mealPlan || 'Half Board'}</span>
+                    </div>
+                    <div class="pdf-front-highlight-card">
+                        <div class="highlight-icon-box"><i class="fas fa-map-pin"></i></div>
+                        <small class="highlight-label">Pickup Point</small>
+                        <span class="highlight-value">${data.pickup || 'As Specified'}</span>
+                    </div>
+                </div>
+
+                <!-- Luxury Price Badge -->
+                <div class="pdf-front-price-section">
+                    <span class="pdf-front-price-label">Starting From</span>
+                    <div class="pdf-front-price-value">${formatCurrency(data.totalCost || 0, data.currencyCode || 'INR')}</div>
+                </div>
+
+                <!-- Premium Accommodations Section -->
+                <div class="pdf-front-hotels-section">
+                    <h3 class="pdf-front-hotels-title">Premium Accommodations</h3>
+                    <table class="pdf-front-hotels-table">
+                        <thead>
+                            <tr>
+                                <th>Hotel / Resort Name</th>
+                                <th>Check-in</th>
+                                <th>Check-out</th>
+                                <th>Nights</th>
+                                <th>Room Category</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${hotels.length > 0 ? hotels.map(h => `
+                                <tr>
+                                    <td class="hotel-name">${h.name || 'Selected Premium Hotel'}</td>
+                                    <td>${formatDate(h.checkIn)}</td>
+                                    <td>${formatDate(h.checkOut)}</td>
+                                    <td>${h.nights || 1} Night(s)</td>
+                                    <td>${h.room || 'Deluxe Room'}</td>
+                                </tr>
+                            `).join('') : `
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted" style="opacity: 0.5; letter-spacing: 1px;">LUXURY STAYS CURATED FOR YOUR JOURNEY</td>
+                                </tr>
+                            `}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    `;
+
+
+    // --- ITINERARY PAGES: ONE DAY PER PAGE ---
+    days.forEach((d, index) => {
+        html += `
+            <div class="pdf-page">
+                <div class="pdf-page-content">
+                
+                <h2 class="fw-bold text-dark" style="font-size: 24px; margin-bottom: 20px;">${d.title || 'Activity Title'}</h2>
+                <div class="d-flex align-items-center gap-3 mb-4">
+
+                     <div class="day-icon d-none" style="width: 60px; height: 60px; font-size: 20px; flex-shrink: 0;">Day ${index + 1}</div>
+                     <div style="height: 2px; flex-grow: 1; background: #064e3b; opacity: 0.2;"></div>
+                     
+                </div>
+                    
+                    <div class="pdf-rich-content" style="font-size: 13px; line-height: 1.8; color: #333;">
+                        ${d.description.replace(/(<img\b[^>]*>)/g, '<div class="pdf-image-wrapper">$1</div>')}
+                    </div>
+                </div>
+            ${generateFooter(data)}
+        </div>
+        `;
+    });
+
+    // --- FINAL PAGE: TERMS & POLICIES ---
+    html += `
+        <div class="pdf-page">
+            <div class="pdf-page-content">
+                <div class="row g-4 mb-4">
+                    <div class="col-12">
+                        <div class="card border-0 bg-white p-4 shadow-sm" style="background: rgba(255,255,255,0.7) !important; border-top: 4px solid #198754 !important;">
+                            <div class="d-flex align-items-center gap-2 border-bottom pb-2 mb-3">
+                                <i class="fas fa-check-circle fs-5 text-success"></i>
+                                <h4 class="fw-bold mb-0 text-dark" style="font-size: 15px; letter-spacing: 1.5px; text-transform: uppercase;">Inclusions</h4>
+                            </div>
+                            <div class="inclusions-list">
+                                ${inclusionsItems.length > 0 ? `<ul class="list-check">${inclusionsItems.map(item => `<li>${item}</li>`).join('')}</ul>` : '<p class="text-muted">Not specified</p>'}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="card border-0 bg-white p-4 shadow-sm" style="background: rgba(255,255,255,0.7) !important; border-top: 4px solid #dc3545 !important;">
+                            <div class="d-flex align-items-center gap-2 border-bottom pb-2 mb-3">
+                                <i class="fas fa-times-circle fs-5 text-danger"></i>
+                                <h4 class="fw-bold mb-0 text-dark" style="font-size: 15px; letter-spacing: 1.5px; text-transform: uppercase;">Exclusions</h4>
+                            </div>
+                            <div class="exclusions-list">
+                                ${exclusionsItems.length > 0 ? `<ul class="list-times">${exclusionsItems.map(item => `<li>${item}</li>`).join('')}</ul>` : '<p class="text-muted">Not specified</p>'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="advisory-card mb-4 shadow-sm rounded-3 p-4">
+                    <h5 class="fw-bold mb-3 text-dark" style="font-size: 14px; letter-spacing: 1px;"><i class="fas fa-shield-alt me-2 accent-orange"></i> IMPORTANT ADVISORY</h5>
+                    <div style="font-size: 11.5px; color: #444; line-height: 1.8;">
+                         ${data.importantNotes || 'Terms and conditions apply as per company policy.'}
+                    </div>
+                </div>
+
+                <div class="policy-card shadow-sm rounded-3 p-4">
+                    <h5 class="fw-bold mb-3 text-dark" style="font-size: 14px; letter-spacing: 1px;"><i class="fas fa-file-invoice-dollar me-2" style="color: var(--primary-color);"></i> BOOKING & CANCELLATION POLICY</h5>
+                    <div style="font-size: 11.5px; color: #444; line-height: 1.8;">
+                        ${data.cancellationPolicy || 'Cancellation charges may apply based on the lead time of cancellation.'}
+                    </div>
+                </div>
+            </div>
+            ${generateFooter(data)}
+        </div>
+    `;
+
+    return html;
+}
+
 // --- PDF EXPORT ---
 async function exportToPDF(itineraryData) {
     if (!itineraryData) {
         Swal.fire('Error', 'No data to export', 'error');
         return;
     }
-
-    const hotels = Array.isArray(itineraryData.hotels) ? itineraryData.hotels : [];
-    const days = Array.isArray(itineraryData.days) ? itineraryData.days : [];
 
     const wrapper = document.getElementById('pdfTemplateWrapper');
     const template = document.getElementById('pdfTemplate');
@@ -393,161 +594,8 @@ async function exportToPDF(itineraryData) {
         }
     });
 
-    // Company Info
-    const pdfLogo = document.getElementById('pdfLogo');
-    if (pdfLogo) {
-        if (itineraryData.companyLogo) {
-            pdfLogo.src = itineraryData.companyLogo;
-            pdfLogo.style.display = 'block';
-        } else {
-            pdfLogo.src = "https://adminapi.flyeasygo.com/assets-files/8e17aad2-9df5-4e81-a841-7551a0b03ddb.png";
-            pdfLogo.style.display = 'block';
-        }
-    }
-
-    const companyNameEl = document.getElementById('pdfCompanyName');
-    if (companyNameEl) {
-        companyNameEl.innerText = (itineraryData.companyName || 'ADVENTURE PLANNER').toUpperCase();
-    }
-
-    const footerCompanyEl = document.getElementById('pdfFooterCompanyName');
-    if (footerCompanyEl) {
-        footerCompanyEl.innerText = itineraryData.companyName || 'AdventurePlanner';
-    }
-
-    const footerWebsite = document.getElementById('pdfFooterWebsite');
-    const footerEmail = document.getElementById('pdfFooterEmail');
-    const footerPhone = document.getElementById('pdfFooterPhone');
-
-    if (footerWebsite) {
-        if (itineraryData.companyWebsite) {
-            footerWebsite.innerText = itineraryData.companyWebsite;
-            footerWebsite.parentElement.style.display = '';
-        } else {
-            footerWebsite.parentElement.style.display = 'none';
-        }
-    }
-    if (footerEmail) {
-        if (itineraryData.companyEmail) {
-            footerEmail.innerText = itineraryData.companyEmail;
-            footerEmail.parentElement.style.display = '';
-        } else {
-            footerEmail.parentElement.style.display = 'none';
-        }
-    }
-    if (footerPhone) {
-        if (itineraryData.companyPhone) {
-            footerPhone.innerText = itineraryData.companyPhone;
-            footerPhone.parentElement.style.display = '';
-        } else {
-            footerPhone.parentElement.style.display = 'none';
-        }
-    }
-
-    const printDateEl = document.getElementById('pdfPrintDate');
-    if (printDateEl) {
-        printDateEl.innerText = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-    }
-
-    // Trip Info
-    const tripNameEl = document.getElementById('pdfTripName');
-    if (tripNameEl) {
-        tripNameEl.innerText = (itineraryData.tripName || 'Travel Proposal').toUpperCase();
-    }
-
-    const destinationEl = document.getElementById('pdfDestination');
-    if (destinationEl) {
-        destinationEl.innerText = itineraryData.destination || 'Destination not set';
-    }
-
-    const datesEl = document.getElementById('pdfDates');
-    if (datesEl) {
-        datesEl.innerText = formatDateRange(itineraryData.startDate, itineraryData.endDate);
-    }
-
-    const costEl = document.getElementById('pdfCost');
-    if (costEl) {
-        costEl.innerText = `${formatCurrency (itineraryData.totalCost, itineraryData.currencyCode)}`;
-    }
-
-    const travelersEl = document.getElementById('pdfTravelers');
-    if (travelersEl) {
-        travelersEl.innerText = getTravelerSummary(itineraryData);
-    }
-
-    const vehicleEl = document.getElementById('pdfVehicle');
-    if (vehicleEl) {
-        vehicleEl.innerText = itineraryData.vehicle;
-    }
-
-    const mealPlanEl = document.getElementById('pdfMealPlan');
-    if (mealPlanEl) {
-        mealPlanEl.innerText = itineraryData.mealPlan;
-    }
-
-    // Hotels Table
-    const hotelsList = document.getElementById('pdfHotelsList');
-    if (hotelsList) {
-        if (hotels.length > 0) {
-            hotelsList.innerHTML = hotels.map(h => `
-                <tr style="border-bottom: 2px solid #6a6a6a !important; border-color: #666;">
-                    <td style="padding: 10px 12px; font-weight: 600; color: #16324f; font-size: 11px; border-color: #666;">
-                        ${h.name}
-                        ${h.checkIn && h.checkOut ? `<div style="font-size: 10px; color: #777; margin-top: 4px; border-color: #666;">${formatDateRange(h.checkIn, h.checkOut)}</div>` : ''}
-                    </td>
-                    <td style="padding: 10px 12px; color: #666; font-size: 11px; border-color: #666;">${h.nights} Nights</td>
-                    <td style="padding: 10px 12px; color: #666; font-size: 11px; border-color: #666;">${h.room}</td>
-                </tr>
-            `).join('');
-        } else {
-            hotelsList.innerHTML = '<tr><td colspan="3" style="padding: 15px; text-align: center; color: #888; font-size: 11px;">No hotels specified</td></tr>';
-        }
-    }
-
-    // Days with Adventure Timeline
-    const daysList = document.getElementById('pdfDaysList');
-    if (daysList) {
-        daysList.innerHTML = days.length > 0 ? days.map((d, index) => `
-            <div class="pdf-day-item" style="margin-bottom: 14px; border-left: 2px solid #1b4332; padding-left: 18px; position: relative;">
-                <div style="position: absolute; left: -13px; top: 0; width: 24px; height: 24px; background: #d97706; border-radius: 50%; color: white; text-align: center; font-size: 11px; line-height: 24px; font-weight: 800; box-shadow: 0 2px 5px rgba(217,119,6,0.2); z-index: 2; border: 2.5px solid white;">
-                    ${index + 1}
-                </div>
-                <h5  style=" margin-top: 10px; color: #1b4332; margin: 0 0 8px; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">
-                    DAY ${index + 1}: ${d.title}
-                </h5>
-                <div class="pdf-rich-content" style="font-size: 11px; line-height: 1.5; color: #444;">
-                    ${d.description}
-                </div>
-            </div>
-        `).join('') : '<p class="text-muted small">No day activities specified.</p>';
-    }
-
-    // Quill Contents
-    const inclusionsItems = parseToListItems(itineraryData.inclusions);
-    const inclusionsEl = document.getElementById('pdfInclusions');
-    if (inclusionsEl) {
-        inclusionsEl.innerHTML = inclusionsItems.length > 0
-            ? `<ul class="list-check">${inclusionsItems.map(item => `<li>${item}</li>`).join('')}</ul>`
-            : 'N/A';
-    }
-
-    const exclusionsItems = parseToListItems(itineraryData.exclusions);
-    const exclusionsEl = document.getElementById('pdfExclusions');
-    if (exclusionsEl) {
-        exclusionsEl.innerHTML = exclusionsItems.length > 0
-            ? `<ul class="list-times">${exclusionsItems.map(item => `<li>${item}</li>`).join('')}</ul>`
-            : 'N/A';
-    }
-
-    const notesEl = document.getElementById('pdfNotes');
-    if (notesEl) {
-        notesEl.innerHTML = itineraryData.importantNotes || 'N/A';
-    }
-
-    const policyEl = document.getElementById('pdfPolicy');
-    if (policyEl) {
-        policyEl.innerHTML = itineraryData.cancellationPolicy || 'N/A';
-    }
+    // Render the multi-page content
+    template.innerHTML = renderItineraryHTML(itineraryData);
 
     // Show wrapper for capture
     const originalDisplay = wrapper.style.display;
@@ -562,16 +610,17 @@ async function exportToPDF(itineraryData) {
         const opt = {
             margin: 0,
             filename: `${itineraryData.tripName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_itinerary.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
+            image: { type: 'jpeg', quality: 1.0 }, // Maximum quality
             html2canvas: {
                 scale: 2,
                 useCORS: true,
                 logging: false,
                 letterRendering: true,
                 scrollX: 0,
-                scrollY: 0
+                scrollY: 0,
+                backgroundColor: '#f6f3ea' // Ensure background color is captured
             },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true },
             pagebreak: { mode: ['css', 'legacy'] }
         };
 
@@ -580,7 +629,7 @@ async function exportToPDF(itineraryData) {
 
         Swal.fire({
             title: 'Generated!',
-            text: 'Premium PDF downloaded successfully.',
+            text: 'Premium multi-page PDF downloaded successfully.',
             icon: 'success',
             timer: 2000,
             showConfirmButton: false
@@ -609,7 +658,7 @@ function handleSave(e) {
     }
 
     saveItineraries(itineraries);
-    
+
     Swal.fire({
         title: 'Itinerary Saved Successfully!',
         text: 'Your curated adventure proposal has been stored inside the itineraries library.',
@@ -866,156 +915,9 @@ function loadEditData() {
 // --- DUAL PANE LIVE PREVIEW & BINDING ---
 function updatePreview() {
     const data = collectFormData();
-
-    // 1. Company Info
-    const pdfLogo = document.getElementById('pdfLogo');
-    if (pdfLogo) {
-        if (data.companyLogo) {
-            pdfLogo.src = data.companyLogo;
-            pdfLogo.style.display = 'block';
-        } else {
-            pdfLogo.src = "https://adminapi.flyeasygo.com/assets-files/8e17aad2-9df5-4e81-a841-7551a0b03ddb.png";
-            pdfLogo.style.display = 'block';
-        }
-    }
-
-    const companyNameEl = document.getElementById('pdfCompanyName');
-    if (companyNameEl) {
-        companyNameEl.innerText = (data.companyName || 'LUXURY EXPLORER').toUpperCase();
-    }
-
-    const footerCompanyEl = document.getElementById('pdfFooterCompanyName');
-    if (footerCompanyEl) {
-        footerCompanyEl.innerText = data.companyName || 'LuxuryExplorer';
-    }
-
-    const footerWebsite = document.getElementById('pdfFooterWebsite');
-    const footerEmail = document.getElementById('pdfFooterEmail');
-    const footerPhone = document.getElementById('pdfFooterPhone');
-
-    if (footerWebsite) {
-        footerWebsite.innerText = data.companyWebsite || 'www.luxuryexplorer.com';
-    }
-    if (footerEmail) {
-        footerEmail.innerText = data.companyEmail || 'concierge@luxuryexplorer.com';
-    }
-    if (footerPhone) {
-        footerPhone.innerText = data.companyPhone || '+91 98765 43210';
-    }
-
-    const printDateEl = document.getElementById('pdfPrintDate');
-    if (printDateEl) {
-        printDateEl.innerText = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-    }
-
-    // 2. Trip Info
-    const tripNameEl = document.getElementById('pdfTripName');
-    if (tripNameEl) {
-        tripNameEl.innerText = (data.tripName || 'Discover Patagonia').toUpperCase();
-    }
-
-    const destinationEl = document.getElementById('pdfDestination');
-    if (destinationEl) {
-        destinationEl.innerText = data.destination || 'El Calafate, Argentina';
-    }
-
-    const datesEl = document.getElementById('pdfDates');
-    if (datesEl) {
-        datesEl.innerText = formatDateRange(data.startDate, data.endDate);
-    }
-
-    const costEl = document.getElementById('pdfCost');
-    if (costEl) {
-        costEl.innerText = data.totalCost ? `${formatCurrency(data.totalCost, data.currencyCode)} ` : formatCurrency(0, data.currencyCode || 'USD');
-    }
-
-
-    const currencySymbolEl = document.getElementById('currencySymbol');
-    if (currencySymbolEl) {
-        currencySymbolEl.innerText = getCurrencySymbol(data.currencyCode || 'USD');
-    }
-
-    const travelersEl = document.getElementById('pdfTravelers');
-    if (travelersEl) {
-        travelersEl.innerText = getTravelerSummary(data);
-    }
-
-    const vehicleEl = document.getElementById('pdfVehicle');
-    if (vehicleEl) {
-        vehicleEl.innerText = data.vehicle || 'Standard Vehicle';
-    }
-
-    const mealPlanEl = document.getElementById('pdfMealPlan');
-    if (mealPlanEl) {
-        mealPlanEl.innerText = data.mealPlan || 'Half Board';
-    }
-
-    // 3. Hotels Table
-    const hotelsList = document.getElementById('pdfHotelsList');
-    if (hotelsList) {
-        if (data.hotels && data.hotels.length > 0) {
-            hotelsList.innerHTML = data.hotels.map(h => `
-                <tr style="border-bottom: 1px solid #eee;">
-                    <td style="padding: 10px 12px; font-weight: 600; color: #16324f; font-size: 11px;">
-                        ${h.name || 'Hotel Name'}
-                        ${h.checkIn && h.checkOut ? `<div style="font-size: 10px; color: #777; margin-top: 4px;">${formatDateRange(h.checkIn, h.checkOut)}</div>` : ''}
-                    </td>
-                    <td style="padding: 10px 12px; color: #666; font-size: 11px;">${h.nights || 1} Nights</td>
-                    <td style="padding: 10px 12px; color: #666; font-size: 11px;">${h.room || 'Standard'}</td>
-                </tr>
-            `).join('');
-        } else {
-            hotelsList.innerHTML = '<tr><td colspan="3" style="padding: 15px; text-align: center; color: #888; font-size: 11px;">No hotels specified</td></tr>';
-        }
-    }
-
-    // 4. Days with Adventure Timeline
-    const daysList = document.getElementById('pdfDaysList');
-    if (daysList) {
-        if (data.days && data.days.length > 0) {
-            daysList.innerHTML = data.days.map((d, index) => `
-                <div class="pdf-day-item" style="margin-bottom: 14px; border-left: 2px solid #1b4332; padding-left: 18px; position: relative;">
-                    <div style="position: absolute; left: -13px; top: 0; width: 24px; height: 24px; background: #d97706; border-radius: 50%; color: white; text-align: center; font-size: 11px; line-height: 24px; font-weight: 800; box-shadow: 0 2px 5px rgba(217,119,6,0.2); z-index: 2; border: 2.5px solid white;">
-                        ${index + 1}
-                    </div>
-                    <h5 style="margin-top: 10px; color: #1b4332; margin: 0 0 8px; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">
-                        DAY ${index + 1}: ${d.title || 'Activity Title'}
-                    </h5>
-                    <div class="pdf-rich-content" style="font-size: 11px; line-height: 1.5; color: #444;">
-                        ${d.description || 'Description of the day activity...'}
-                    </div>
-                </div>
-            `).join('');
-        } else {
-            daysList.innerHTML = '<p class="text-muted small">No day activities specified.</p>';
-        }
-    }
-
-    // 5. Quill Contents
-    const inclusionsItems = parseToListItems(data.inclusions);
-    const inclusionsEl = document.getElementById('pdfInclusions');
-    if (inclusionsEl) {
-        inclusionsEl.innerHTML = inclusionsItems.length > 0
-            ? `<ul class="list-check">${inclusionsItems.map(item => `<li>${item}</li>`).join('')}</ul>`
-            : 'N/A';
-    }
-
-    const exclusionsItems = parseToListItems(data.exclusions);
-    const exclusionsEl = document.getElementById('pdfExclusions');
-    if (exclusionsEl) {
-        exclusionsEl.innerHTML = exclusionsItems.length > 0
-            ? `<ul class="list-times">${exclusionsItems.map(item => `<li>${item}</li>`).join('')}</ul>`
-            : 'N/A';
-    }
-
-    const notesEl = document.getElementById('pdfNotes');
-    if (notesEl) {
-        notesEl.innerHTML = data.importantNotes || 'N/A';
-    }
-
-    const policyEl = document.getElementById('pdfPolicy');
-    if (policyEl) {
-        policyEl.innerHTML = data.cancellationPolicy || 'N/A';
+    const template = document.getElementById('pdfTemplate');
+    if (template) {
+        template.innerHTML = renderItineraryHTML(data);
     }
 }
 

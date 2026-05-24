@@ -8,6 +8,7 @@
     --bg-light: #f8f9fa;
 }
 
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
 body {
@@ -88,20 +89,20 @@ body {
     padding: 1rem 1.1rem;
 }
 
-.text-primary{
+.text-primary {
     color: #1c99e6 !important;
 }
 
-.bg-primary{
+.bg-primary {
     background-color: #1c99e6 !important;
 }
 
-.btn-outline-primary{
+.btn-outline-primary {
 
     &:hover {
         background-color: #1c99e6 !important;
     }
-    
+
 }
 
 .hero-metric-value,
@@ -212,6 +213,11 @@ body {
     border-radius: 16px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
     transition: transform 0.2s ease;
+}
+
+img {
+    max-width: 500px !important;
+    border-radius: 8px;
 }
 
 .card-header {
@@ -354,10 +360,78 @@ body {
 
 /* PDF Template Preview */
 #pdfTemplate {
-    background: white;
-    box-shadow: 0 0 50px rgba(0, 0, 0, 0.1);
+    background-color: #f6f3ea;
+    box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.03);
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    position: relative;
+    width: 210mm;
+}
+
+.pdf-page {
+    width: 210mm;
+    height: 297mm;
+    /* Force exact A4 height */
+    position: relative;
+    overflow: hidden;
+    background-color: #f6f3ea !important;
+    background-blend-mode: soft-light, normal, normal, normal;
+    background-size: 220px 220px, 120px 120px, auto, auto;
+    display: flex;
+    flex-direction: column;
+    page-break-after: avoid !important;
+}
+
+
+.html2pdf__page-break {
+    height: 0;
+    page-break-after: always;
+}
+
+.pdf-page-content {
+    flex: 1;
+    padding: 30px 40px;
+    position: relative;
+    z-index: 1;
+}
+
+.pdf-page-footer {
+    background: linear-gradient(90deg, rgb(22, 50, 79) 0%, rgb(0 112 191) 100%) !important;
+    color: white !important;
+    padding: 12px 40px !important;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px !important;
+    border-radius: 0 !important;
+    margin-top: auto;
+    position: relative;
+    z-index: 2;
+    border-top: 3px solid #be840d;
+}
+
+.pdf-page-footer::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' opacity='0.05'%3E%3Cpath d='M0 0 L100 100 M100 0 L0 100' stroke='white' stroke-width='0.5'/%3E%3C/svg%3E");
+    pointer-events: none;
+}
+
+#pdfTemplate::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 10% 10%, rgba(0, 123, 209, 0.01) 0%, transparent 50%),
+        radial-gradient(circle at 90% 90%, rgba(248, 173, 19, 0.01) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
 }
 
 @media (max-width: 768px) {
@@ -384,17 +458,18 @@ body {
 
 /* Custom travel proposal styles used in PDF templates */
 @media print {
+
     /* Hide everything on the page */
     body * {
         visibility: hidden !important;
     }
-    
+
     /* Make sure #pdfTemplateWrapper and all its children are visible */
     #pdfTemplateWrapper,
     #pdfTemplateWrapper * {
         visibility: visible !important;
     }
-    
+
     /* Position the template wrapper perfectly to take full screen */
     #pdfTemplateWrapper {
         position: absolute !important;
@@ -407,25 +482,32 @@ body {
         display: block !important;
         visibility: visible !important;
     }
-    
+
     #pdfTemplate {
         position: absolute !important;
         left: 0 !important;
         top: 0 !important;
-        width: 210mm !important; /* Exactly A4 standard size */
+        width: 210mm !important;
+        /* Exactly A4 standard size */
         min-height: 297mm !important;
         margin: 0 !important;
         border: none !important;
         box-shadow: none !important;
         visibility: visible !important;
     }
-    
+
     /* Avoid breaking inside cards, tables, sections, days, and footers */
-    .card, tr, .day-card, .mb-4, .mb-5, .bg-deep-navy, .bg-dark {
+    .card,
+    tr,
+    .day-card,
+    .mb-4,
+    .mb-5,
+    .bg-deep-navy,
+    .bg-dark {
         page-break-inside: avoid !important;
         break-inside: avoid !important;
     }
-    
+
     /* Page configurations for standard A4 printing with zero margins */
     @page {
         size: A4 portrait;
@@ -439,8 +521,21 @@ body {
 }
 
 .bg-deep-navy {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%) !important;
+    background: linear-gradient(135deg, var(--primary-dark) 0%, #003a66 100%) !important;
     border-bottom: 4px solid var(--accent-color) !important;
+    overflow: hidden;
+}
+
+.bg-deep-navy::after {
+    content: "\f072";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    position: absolute;
+    right: -20px;
+    top: -20px;
+    font-size: 150px;
+    color: rgba(255, 255, 255, 0.03);
+    transform: rotate(-15deg);
 }
 
 .border-orange {
@@ -462,21 +557,77 @@ body {
 }
 
 .day-icon {
-    background-color: var(--accent-color) !important;
-    width: 32px;
-    height: 32px;
+    background-color: #0d90af !important;
+    width: 70px !important;
+    height: 30px !important;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 50%;
+    border-radius: 50px !important;
     font-weight: 800;
-    font-size: 1rem;
+    font-size: 12px !important;
     color: white;
+    text-transform: uppercase;
+    margin-right: 15px;
+    box-shadow: 0 4px 10px rgba(13, 144, 175, 0.2);
+}
+
+/* Tape Effect for PDF Images */
+.pdf-image-wrapper {
+    position: relative;
+    display: inline-block;
+    margin: 25px auto;
+    width: 100%;
+    text-align: center;
+}
+
+.pdf-image-wrapper img {
+    border: 8px solid white !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+    transform: rotate(-1.5deg);
+    max-width: 90% !important;
+    border-radius: 2px !important;
+}
+
+.pdf-image-wrapper::before {
+    content: "";
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%) rotate(3deg);
+    width: 120px;
+    height: 35px;
+    background: rgba(246, 243, 234, 0.7);
+    /* Translucent tape */
+    backdrop-filter: blur(2px);
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    z-index: 10;
+}
+
+.pdf-image-wrapper::after {
+    content: "";
+    position: absolute;
+    bottom: -10px;
+    right: 5%;
+    width: 40px;
+    height: 40px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230d90af' opacity='0.2'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9v-2h2v2zm0-4H9V7h2v5z'/%3E%3C/svg%3E") no-repeat;
+    opacity: 0.1;
+    z-index: 5;
 }
 
 /* Custom layout classes to eliminate hardcoded colors from HTML templates */
 .pdf-summary-card {
     border-top: 3px solid var(--accent-color) !important;
+    background: #ffffff !important;
+    border-radius: 12px !important;
+    transition: all 0.3s ease;
+}
+
+.pdf-summary-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08) !important;
 }
 
 .advisory-card {
@@ -486,11 +637,45 @@ body {
 
 .policy-card {
     border-left: 6px solid var(--primary-color) !important;
+    background: #fbfdff !important;
 }
 
 .pdf-footer {
-    background: var(--primary-dark) !important;
-    border-top: 4px solid var(--accent-color) !important;
+    background: #064e3b !important;
+    /* Dark green from reference */
+    border-top: none !important;
+    color: white !important;
+    padding: 10px 0 !important;
+    border-radius: 20px 20px 0 0 !important;
+    margin-top: 20px !important;
+}
+
+.pdf-header-title {
+    text-align: center;
+    margin: 20px 0;
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.pdf-header-title h2 {
+    color: #0d90af !important;
+    font-weight: 900 !important;
+    font-size: 32px !important;
+    /* Slightly larger for premium look */
+    margin-bottom: 2px !important;
+    letter-spacing: 3px !important;
+    text-transform: uppercase !important;
+}
+
+.pdf-header-title::after {
+    content: "";
+    display: block;
+    width: 200px;
+    height: 4px;
+    background: #064e3b;
+    margin: 5px auto 0;
+    border-radius: 2px;
 }
 
 #pdfTripName {
@@ -508,10 +693,12 @@ body {
 
 hr.accent-hr {
     height: 3px;
-    background: linear-gradient(90deg, var(--accent-color), #fcd34d, transparent);
-    opacity: 0.7;
-    width: 100%;
+    background: linear-gradient(90deg, var(--accent-color) 0%, #fcd34d 50%, transparent 100%);
+    opacity: 1;
+    width: 60%;
     margin: 0.5rem 0 1.2rem 0;
+    border: none;
+    border-radius: 999px;
 }
 
 .table-custom thead tr {
@@ -530,37 +717,51 @@ hr.accent-hr {
 }
 
 .list-check {
-    list-style: none;
-    padding-left: 0;
+    list-style: none !important;
+    padding-left: 0 !important;
 }
 
 .list-check li {
-    margin-bottom: 12px;
-    display: flex;
-    align-items: baseline;
-    gap: 12px;
+    margin-bottom: 10px !important;
+    padding-left: 28px !important;
+    position: relative !important;
+    font-size: 13px;
+    color: #444;
 }
 
-.list-check li i {
-    color: #198754; /* Beautiful Green for Inclusions */
-    width: 20px;
+.list-check li::before {
+    content: "\f058";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    color: #198754;
+    position: absolute;
+    left: 0;
+    top: 2px;
+    font-size: 15px;
 }
 
 .list-times {
-    list-style: none;
-    padding-left: 0;
+    list-style: none !important;
+    padding-left: 0 !important;
 }
 
 .list-times li {
-    margin-bottom: 12px;
-    display: flex;
-    align-items: baseline;
-    gap: 12px;
+    margin-bottom: 10px !important;
+    padding-left: 28px !important;
+    position: relative !important;
+    font-size: 13px;
+    color: #444;
 }
 
-.list-times li i {
-    color: #dc3545; /* Beautiful Red for Exclusions */
-    width: 20px;
+.list-times li::before {
+    content: "\f057";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    color: #dc3545;
+    position: absolute;
+    left: 0;
+    top: 2px;
+    font-size: 15px;
 }
 
 /* Custom styles for Quill-generated lists in PDF Template */
@@ -580,10 +781,12 @@ hr.accent-hr {
 }
 
 #pdfInclusions ul li::before {
-    content: "\f058" !important; /* FontAwesome check-circle unicode */
+    content: "\f058" !important;
+    /* FontAwesome check-circle unicode */
     font-family: "Font Awesome 6 Free" !important;
     font-weight: 900 !important;
-    color: #198754 !important; /* Premium Green */
+    color: #198754 !important;
+    /* Premium Green */
     position: absolute !important;
     left: 0 !important;
     top: 2px !important;
@@ -606,10 +809,12 @@ hr.accent-hr {
 }
 
 #pdfExclusions ul li::before {
-    content: "\f057" !important; /* FontAwesome times-circle unicode */
+    content: "\f057" !important;
+    /* FontAwesome times-circle unicode */
     font-family: "Font Awesome 6 Free" !important;
     font-weight: 900 !important;
-    color: #dc3545 !important; /* Premium Red */
+    color: #dc3545 !important;
+    /* Premium Red */
     position: absolute !important;
     left: 0 !important;
     top: 2px !important;
@@ -619,18 +824,239 @@ hr.accent-hr {
 /* Scoped high-fidelity PDF Template styles and typography scaling (Max 20px) */
 #pdfTemplate {
     font-size: 11px !important;
-    line-height: 1.5 !important;
-    font-family: 'Outfit', 'Inter', sans-serif !important;
+    line-height: 1.6 !important;
+}
+
+/* Magazine-Style PDF Front Page Redesign */
+.pdf-front-page {
+    position: relative;
+    padding: 60px 40px !important;
+    background-color: #f6f3ea !important;
+    min-height: 297mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.pdf-front-page::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    bottom: 20px;
+    border: 1px solid rgba(92, 85, 65, 0.2);
+    pointer-events: none;
+}
+
+.pdf-front-page::after {
+    content: '';
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    right: 30px;
+    bottom: 30px;
+    border: 2px solid rgba(92, 85, 65, 0.1);
+    pointer-events: none;
+}
+
+.pdf-front-logo-container {
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+}
+
+.pdf-front-logo {
+    max-height: 100px;
+    max-width: 220px;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.05));
+}
+
+.pdf-front-header-accent {
+    width: 60px;
+    height: 3px;
+    background: #5c5541;
+    margin: 20px auto;
+}
+
+.pdf-front-package-name {
+    font-family: 'Outfit', sans-serif !important;
+    font-size: 42px !important;
+    font-weight: 300 !important;
+    color: #5c5541 !important;
+    text-transform: uppercase;
+    letter-spacing: 6px;
+    margin-bottom: 10px;
+    line-height: 1.1;
+}
+
+.pdf-front-destination {
+    font-size: 18px !important;
+    font-weight: 500 !important;
+    color: #a0aec0;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    margin-bottom: 40px;
+}
+
+.pdf-front-details {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+    margin: 40px auto;
+    margin-bottom: 20px;
+    max-width: 850px;
+    padding: 30px;
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(5px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.pdf-front-highlight-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.highlight-icon-box {
+    font-size: 22px;
+    color: #0071c1;
+    margin-bottom: 10px;
+    opacity: 0.8;
+}
+
+.highlight-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    color: #a0aec0;
+    letter-spacing: 2px;
+    font-weight: 600;
+    margin-bottom: 3px;
+}
+
+.highlight-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: #2d3748;
+}
+
+.pdf-front-price-section {
+    margin: 20px auto;
+    margin-bottom: 40px;
+    max-width: 350px;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 15px 30px;
+    background-color: #0070be !important;
+    color: #ffffff !important;
+    display: inline-block;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    min-width: 300px;
+}
+
+.pdf-front-price-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    opacity: 0.9;
+    display: block;
+    margin-bottom: 0px;
+    color: #ffffff !important;
+}
+
+.pdf-front-price-value {
+    font-size: 20px !important;
+    font-weight: 800 !important;
+    letter-spacing: 1px;
+    color: #ffffff !important;
+    display: block;
+}
+
+.pdf-front-hotels-section {
+    margin-top: auto;
+    width: 100%;
+}
+
+.pdf-front-hotels-title {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: #5c5541;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin-bottom: 20px;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+.pdf-front-hotels-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 2px;
+    background: rgba(92, 85, 65, 0.3);
+}
+
+.pdf-front-hotels-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: transparent;
+    border: 2px solid #0070be !important;
+}
+
+.pdf-front-hotels-table th {
+    padding: 10px 8px;
+    font-size: 9px;
+    text-transform: uppercase;
+    color: #000000;
+    border: 1px solid #0070be !important;
+    background-color: #f0f0f0;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.pdf-front-hotels-table td {
+    padding: 10px 8px;
+    font-size: 11px;
+    color: #000000;
+    border: 1px solid #0070be !important;
+}
+
+.pdf-front-hotels-table td.hotel-name {
+    font-weight: 700;
+    color: #000000;
+}
+
+#pdfTemplate {
+    font-family: 'Inter', sans-serif !important;
+    color: #334155 !important;
+}
+
+#pdfTemplate h1,
+#pdfTemplate h2,
+#pdfTemplate h3,
+#pdfTemplate #pdfCompanyName,
+#pdfTemplate #pdfTripName {
+    font-family: 'Montserrat', sans-serif !important;
+    font-weight: 800 !important;
 }
 
 #pdfTemplate h1,
 #pdfTemplate #pdfCompanyName {
-    font-size: 16px !important;
+    font-size: 18px !important;
+    color: #0071c1 !important;
+    letter-spacing: 1px !important;
 }
 
 #pdfTemplate h2,
 #pdfTemplate #pdfTripName {
-    font-size: 20px !important; /* Strictly enforces 20px maximum heading size */
+    font-size: 20px !important;
 }
 
 #pdfTemplate h3 {
@@ -647,7 +1073,8 @@ hr.accent-hr {
 #pdfTemplate td,
 #pdfTemplate th,
 #pdfTemplate div {
-    font-size: 11px; /* Proportional scaling down for content */
+    font-size: 11px;
+    /* Proportional scaling down for content */
 }
 
 #pdfTemplate .pdf-summary-card .fw-bold {
@@ -664,9 +1091,9 @@ hr.accent-hr {
 }
 
 #pdfTemplate .day-icon {
-    width: 24px !important;
-    height: 24px !important;
-    font-size: 11px !important;
+    width: 70px !important;
+    height: 29px !important;
+    font-size: 12px !important;
 }
 
 #pdfTemplate #pdfInclusions ul li,
@@ -693,5 +1120,20 @@ hr.accent-hr {
 }
 
 #pdfTemplate .p-4.p-xl-5 {
-    padding: 1.5rem !important; /* Premium tight margins for A4 pages to avoid gaps */
+    padding: 1.5rem !important;
+}
+
+/* High-specificity overrides for rich content in PDF to prevent template styles from overriding user-defined font weights */
+#pdfTemplate .pdf-rich-content h1,
+#pdfTemplate .pdf-rich-content h2,
+#pdfTemplate .pdf-rich-content h3,
+#pdfTemplate .pdf-rich-content h4,
+#pdfTemplate .pdf-rich-content h5,
+#pdfTemplate .pdf-rich-content h6 {
+    font-family: "Montserrat", sans-serif !important;
+    font-weight: 500 !important;
+    color: #334155 !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+    margin-bottom: 12px !important;
 }

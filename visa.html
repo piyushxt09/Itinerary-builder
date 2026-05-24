@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
     <link
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="styles.css">
@@ -441,10 +441,13 @@
                             <div class="card-body p-3">
                                 <div class="row g-2">
                                     <div class="col-md-12">
-                                        <label class="form-label small fw-bold">Visa Required Docs (One per
-                                            line)</label>
-                                        <textarea class="form-control form-control-sm" id="inputRequiredDocs"
-                                            rows="6"></textarea>
+                                        <label class="form-label small fw-bold">Visa Required Docs (Checklist)</label>
+                                        <div class="text-muted small mb-1" style="font-size: 10px;">
+                                            <i class="fas fa-info-circle me-1"></i> Use <strong># Heading</strong> for
+                                            sections, others as points.
+                                        </div>
+                                        <textarea class="form-control form-control-sm" id="inputRequiredDocs" rows="8"
+                                            placeholder="# SECTION NAME&#10;Document item 1&#10;Document item 2"></textarea>
                                     </div>
                                     <div class="col-md-12 mt-2">
                                         <label class="form-label small fw-bold">Required Details Checklist (One per

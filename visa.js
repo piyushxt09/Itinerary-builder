@@ -67,7 +67,7 @@ function resetToDefaults() {
     document.getElementById('inputFees').value = "FEES: 11000 INR FOR SINGLE ENTRY PER APPLICANT";
     document.getElementById('inputTerms').value = "NOTE: Courier Charges are not included and will be charged additionally.";
 
-    document.getElementById('inputRequiredDocs').value = DEFAULT_DOCS.join("\n");
+    document.getElementById('inputRequiredDocs').value = "# PERSONAL DOCUMENTS\n" + DEFAULT_DOCS.slice(0, 4).join("\n") + "\n\n# COMPANY & INVITATION\n" + DEFAULT_DOCS.slice(4).join("\n");
     document.getElementById('inputDetailsList').value = DEFAULT_DETAILS.join("\n");
 
     updatePreview();
@@ -136,16 +136,30 @@ function updatePreview() {
     document.getElementById('pdfFees').innerText = data.fees || 'FEES: N/A';
     document.getElementById('pdfTerms').innerText = data.terms || 'N/A';
 
-    // 4. Required docs list
+    // 4. Required docs list with Heading support
     const docsContainer = document.getElementById('pdfDocsListContainer');
     if (docsContainer) {
         if (data.requiredDocs.length > 0) {
-            docsContainer.innerHTML = data.requiredDocs.map((doc, i) => `
-                <div class="mb-2" style="font-size: 10px; color: #334155; line-height: 1.35; display: flex; align-items: flex-start; gap: 6px;">
-                   
-                    <span><strong>${i + 1}.</strong> ${doc}</span>
-                </div>
-            `).join('');
+            let html = '';
+            let itemCount = 1;
+
+            data.requiredDocs.forEach(line => {
+                if (line.startsWith('#')) {
+                    // It's a heading
+                    const headingText = line.replace(/^#\s*/, '').toUpperCase();
+                    html += `<div class="mt-3 mb-2 fw-bold voucher-section-title border-bottom pb-1" style="font-size: 11px; letter-spacing: 0.5px;"><i class="fas fa-folder-open"></i> ${headingText}</div>`;
+                    itemCount = 1; // Reset counter for new section if desired, or keep global. Let's keep global for now but styling is different.
+                } else {
+                    // It's a document point
+                    html += `
+                        <div class="mb-1" style="font-size: 10px; color: #334155; line-height: 1.35; display: flex; align-items: flex-start; gap: 6px; padding-left: 5px;">
+                            <span style="color: #1e3a8a; font-weight: 700;">•</span>
+                            <span>${line}</span>
+                        </div>
+                    `;
+                }
+            });
+            docsContainer.innerHTML = html;
         } else {
             docsContainer.innerHTML = `<span class="text-muted small">No documents listed.</span>`;
         }
