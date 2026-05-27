@@ -203,12 +203,7 @@ function addHotel(data = {}) {
                 </div>
                 <div class="col-md-9">
                     <label class="form-label small fw-bold text-muted">Room Category</label>
-                    <select class="form-select hotel-room">
-                        <option value="Standard" ${data.room === 'Standard' ? 'selected' : ''}>Standard</option>
-                        <option value="Deluxe" ${data.room === 'Deluxe' ? 'selected' : ''}>Deluxe</option>
-                        <option value="Suite" ${data.room === 'Suite' ? 'selected' : ''}>Suite</option>
-                        <option value="Villa" ${data.room === 'Villa' ? 'selected' : ''}>Villa</option>
-                    </select>
+                    <input type="text" class="form-control hotel-room" placeholder="e.g. Deluxe Room, Sea View Suite" value="${data.room || ''}">
                 </div>
             </div>
         </div>
