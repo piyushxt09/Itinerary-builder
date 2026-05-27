@@ -47,17 +47,17 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const parsedTarget = JSON.parse(editTarget);
             console.log("Edit target found:", parsedTarget);
-            
+
             // Set session identifiers
             currentEditingVoucherId = parsedTarget.id || null;
             currentVoucherLabel = parsedTarget.label || "";
-            
+
             // Populate form
             loadVoucherData(parsedTarget);
-            
+
             // Persist as current draft immediately
             saveToLocalStorage();
-            
+
             // Clear the trigger
             localStorage.removeItem('hotel_voucher_edit_target');
 
@@ -341,6 +341,7 @@ function updateLivePreview() {
     const agencyName = document.getElementById('inputAgencyName').value.trim() || "flyeasygo PVT LTD";
     const agencyEmail = document.getElementById('inputAgencyEmail').value.trim() || "bookings@flyeasygo.com";
     const agencyPhone = document.getElementById('inputAgencyPhone').value.trim() || "+91 98765 43210";
+    const agencyWebsite = document.getElementById('inputAgencyWebsite').value.trim() || "www.flyeasygo.com";
     const hotelName = document.getElementById('inputHotelName').value.trim() || "Hotel Name";
     const hotelAddress = document.getElementById('inputHotelAddress').value.trim() || "Hotel Address";
     const hotelPhone = document.getElementById('inputHotelPhone').value.trim() || "N/A";
@@ -358,6 +359,7 @@ function updateLivePreview() {
     document.getElementById('viewFooterAgencyName').innerText = agencyName.toUpperCase();
     document.getElementById('viewAgencyEmail').innerText = agencyEmail;
     document.getElementById('viewAgencyPhone').innerText = agencyPhone;
+    document.getElementById('viewAgencyWebsite').innerText = agencyWebsite;
 
     document.getElementById('viewHotelName').innerText = hotelName;
     document.getElementById('viewHotelAddress').innerText = hotelAddress;

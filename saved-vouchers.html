@@ -270,11 +270,21 @@
                         <a class="nav-link" href="itineraries.html"><i class="fas fa-folder-open me-1"></i> Saved
                             Itineraries</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="add-itinerary.html"><i class="fas fa-plus-circle me-1"></i> Create
+                            Itinerary</a>
+                    </li>
 
                     <li class="nav-item">
                         <a class="nav-link text-warning fw-bold" href="hotel-voucher.html?new=1"><i
                                 class="fas fa-hotel me-1"></i> Hotel Voucher</a>
                     </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link text-warning fw-bold" href="visa.html"><i
+                                class="fas fa-passport me-1"></i> Visa Checklist</a>
+                    </li>
+
                     <li class="nav-item">
                         <a class="nav-link active fw-bold text-info border-bottom border-2 border-warning"
                             href="saved-vouchers.html"><i class="fas fa-file-pdf me-1"></i> Saved Vouchers</a>
@@ -597,7 +607,8 @@
                                         <h4 class="text-primary mb-0">${escapeHtml(voucher.agencyName.toUpperCase())}</h4>
                                         <div class="text-muted small" style="font-size: 10px;">
                                             <span>${escapeHtml(voucher.agencyEmail)}</span> | 
-                                            <span>${escapeHtml(voucher.agencyPhone)}</span>
+                                            <span>${escapeHtml(voucher.agencyPhone)}</span> | 
+                                            <span>${escapeHtml(voucher.agencyWebsite)}</span>
                                         </div>
                                     </div>
                                 </div>
