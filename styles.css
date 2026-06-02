@@ -370,7 +370,7 @@ img {
 
 .pdf-page {
     width: 210mm;
-    height: 297mm;
+    height: fit-content !important;
     /* Force exact A4 height */
     position: relative;
     overflow: hidden;
