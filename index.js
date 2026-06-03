@@ -112,35 +112,31 @@ function parseToListItems(htmlOrText) {
     txtNode.innerHTML = text;
     text = txtNode.value;
 
-    // Split by newlines first
-    let lines = text.split('\n')
+    // Split by newlines
+    const rawLines = text.split('\n')
         .map(line => line.trim())
         .filter(line => line.length > 0);
 
-    // Clean bullet prefixes from each line
-    lines = lines.map(line => {
-        return line.replace(/^[\s•\-\*\✓\✕\+\.\d\)]+/, '').trim();
-    }).filter(line => line.length > 0);
+    const processedItems = [];
+    // This regex looks for common bullet markers at the start of a line
+    const bulletRegex = /^[\s•\-\*\✓\✕\+\.\d\)]+/;
 
-    // 3. If there is only 1 line, but it contains commas or semicolons, split by them!
-    if (lines.length === 1) {
-        const singleLine = lines[0];
-        let separators = [';', ','];
-        for (let s = 0; s < separators.length; s++) {
-            const sep = separators[s];
-            if (singleLine.includes(sep)) {
-                const splitItems = singleLine.split(sep)
-                    .map(item => item.trim())
-                    .map(item => item.replace(/^[\s•\-\*\✓\✕\+\.\d\)]+/, '').trim())
-                    .filter(item => item.length > 0);
-                if (splitItems.length > 1) {
-                    return splitItems;
-                }
+    rawLines.forEach(line => {
+        const hasBullet = bulletRegex.test(line);
+        const cleaned = line.replace(bulletRegex, '').trim();
+
+        if (cleaned) {
+            // Start a new item if line has a bullet marker OR if it's the very first content line
+            if (hasBullet || processedItems.length === 0) {
+                processedItems.push(cleaned);
+            } else {
+                // Otherwise, append this line to the previous item (to handle wrapped text)
+                processedItems[processedItems.length - 1] += ' ' + cleaned;
             }
         }
-    }
+    });
 
-    return lines;
+    return processedItems;
 }
 
 // Helper to format dates for PDF
